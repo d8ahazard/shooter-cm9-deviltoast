@@ -96,6 +96,12 @@
 static struct platform_device ion_dev;
 #endif
 
+unsigned engineerid, mem_size_mb;
+
+#ifdef CONFIG_MSM_CAMERA
+#include "board-shooter-camera.c"
+#endif
+
 struct pm8xxx_mpp_init_info {
 	unsigned			mpp;
 	struct pm8xxx_mpp_config_data	config;
@@ -120,8 +126,6 @@ struct pm8xxx_mpp_init_info {
 		.control	= PM8XXX_MPP_##_control, \
 	} \
 }
-
-unsigned engineerid, mem_size_mb;
 
 static struct resource ram_console_resources[] = {
 	{
@@ -1423,7 +1427,7 @@ static struct rpm_regulator_init_data rpm_regulator_init_data[] = {
 	RPM_LDO(PM8058_L0,  0, 1, 0, 1200000, 1200000, LDO150HMIN),
 	RPM_LDO(PM8058_L1,  0, 1, 0, 1350000, 1350000, LDO300HMIN),
 	RPM_LDO(PM8058_L2,  0, 1, 0, 1800000, 2600000, LDO300HMIN),
-	RPM_LDO(PM8058_L3,  0, 1, 0, 1800000, 1800000, LDO150HMIN),
+	RPM_LDO(PM8058_L3,  0, 1, 0, 1800000, 3000000, LDO150HMIN),
 	RPM_LDO(PM8058_L4,  0, 1, 0, 2850000, 2850000,  LDO50HMIN),
 	RPM_LDO(PM8058_L5,  0, 1, 0, 2850000, 2850000, LDO300HMIN),
 	RPM_LDO(PM8058_L6,  0, 1, 0, 3000000, 3600000,  LDO50HMIN),
@@ -1569,6 +1573,9 @@ static struct platform_device *early_devices[] __initdata = {
 #endif
 	&msm_device_dmov_adm0,
 	&msm_device_dmov_adm1,
+#ifdef CONFIG_MSM_CAMERA_FLASH
+	&flashlight_device,
+#endif
 };
 
 #ifdef CONFIG_SENSORS_MSM_ADC
@@ -2840,6 +2847,14 @@ static struct i2c_registry msm8x60_i2c_devices[] __initdata = {
 		msm_tps_65200_boardinfo,
 		ARRAY_SIZE(msm_tps_65200_boardinfo),
 	},
+
+#ifdef CONFIG_S5K6AAFX
+    {
+		MSM_GSBI4_QUP_I2C_BUS_ID,
+		msm_s5k6aafx_camera_boardinfo,
+		ARRAY_SIZE(msm_s5k6aafx_camera_boardinfo),
+	},
+#endif
 #ifdef CONFIG_MSM8X60_AUDIO
 	{
 		MSM_GSBI7_QUP_I2C_BUS_ID,
@@ -2942,6 +2957,13 @@ static struct platform_device *devices[] __initdata = {
 	&msm_kgsl_3d0,
 	&msm_kgsl_2d0,
 	&msm_kgsl_2d1,
+
+#ifdef CONFIG_SP3D
+	&msm_camera_sensor_sp3d,
+#endif
+#ifdef CONFIG_S5K6AAFX
+    &msm_camera_sensor_s5k6aafx,
+#endif
 #ifdef CONFIG_MSM_GEMINI
 	&msm_gemini_device,
 #endif
@@ -3383,7 +3405,10 @@ static uint32_t sdc1_on_gpio_table[] = {
 	GPIO_CFG(167, 1, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_14MA), /* CLK */
 	GPIO_CFG(168, 1, GPIO_CFG_OUTPUT, GPIO_CFG_PULL_UP, GPIO_CFG_10MA), /* CMD */
 };
+#endif
+#endif
 
+#if defined(CONFIG_HTC_MMC) || defined(CONFIG_MSM_CAMERA)
 static void config_gpio_table(uint32_t *table, int len)
 {
 	int n, rc;
@@ -3396,7 +3421,6 @@ static void config_gpio_table(uint32_t *table, int len)
 		}
 	}
 }
-#endif
 #endif
 
 #ifdef CONFIG_MMC_MSM_SDC2_SUPPORT
@@ -4282,7 +4306,11 @@ static void __init msm8x60_init(void)
 
 	msm_clock_init(&msm8x60_clock_init_data);
 
-	/* Buses need to be initialized before early-device registration
+#ifdef CONFIG_SP3D
+	spi_register_board_info(sp3d_spi_board_info, ARRAY_SIZE(sp3d_spi_board_info));
+#endif
+
+    /* Buses need to be initialized before early-device registration
 	 * to get the platform data for fabrics.
 	 */
 	msm8x60_init_buses();
@@ -4318,6 +4346,13 @@ static void __init msm8x60_init(void)
 	pm8058_platform_data.leds_pdata = &pm8058_flash_leds_data;
 	pm8058_platform_data.vibrator_pdata = &pm8058_vib_pdata;
 
+#ifdef CONFIG_SP3D
+    sp3d_init_camera();
+#endif
+#ifdef CONFIG_S5K6AAFX
+    s5k6aafx_init_camera();
+#endif
+
 	platform_add_devices(msm_footswitch_devices,
 					     msm_num_footswitch_devices);
 
@@ -4330,7 +4365,8 @@ static void __init msm8x60_init(void)
 	platform_add_devices(asoc_devices, ARRAY_SIZE(asoc_devices));
 
 	register_i2c_devices();
-	shooter_init_panel();
+
+    shooter_init_panel();
 	msm_pm_set_platform_data(msm_pm_data, ARRAY_SIZE(msm_pm_data));
 	msm_pm_set_rpm_wakeup_irq(RPM_SCSS_CPU0_WAKE_UP_IRQ);
 	msm_cpuidle_set_states(msm_cstates, ARRAY_SIZE(msm_cstates),

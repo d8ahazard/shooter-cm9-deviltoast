@@ -27,16 +27,9 @@
 #include <linux/freezer.h>
 #include <mach/tpa2051d3.h>
 #include <linux/mutex.h>
-
-#include <linux/gpio.h>
 #include <linux/mfd/pm8xxx/pm8921.h>
 
-
-#ifdef CONFIG_AMP_TPA2051D3_ON_GPIO
-#define DEBUG (1)
-#else
 #define DEBUG (0)
-#endif
 #define AMP_ON_CMD_LEN 7
 #define RETRY_CNT 5
 static struct i2c_client *this_client;
@@ -54,13 +47,16 @@ static char RING_AMP_ON[] =
 			{0x00, 0x8E, 0x25, 0x57, 0x8D, 0xCD, 0x0D};
 static char HANDSET_AMP_ON[] =
 			{0x00, 0x82, 0x25, 0x57, 0x13, 0xCD, 0x0D};
-static char BEATS_AMP_ON[] =
-			{0x00, 0x8C, 0x25, 0x57, 0x73, 0x4D, 0x0D};
-static char BEATS_AMP_OFF[] =
-			{0x00, 0x8C, 0x25, 0x57, 0x73, 0x4D, 0x0D};
-static char LINEOUT_AMP_ON[] =
-			{0x00, 0x8C, 0x25, 0x57, 0x73, 0x4D, 0x0D};
 static char AMP_0FF[] = {0x00, 0x90};
+
+struct pm_gpio tpa2051pwr = {
+	.direction      = PM_GPIO_DIR_OUT,
+	.output_buffer  = PM_GPIO_OUT_BUF_CMOS,
+	.output_value   = 0,
+	.pull           = PM_GPIO_PULL_NO,
+	.out_strength   = PM_GPIO_STRENGTH_HIGH,
+	.function       = PM_GPIO_FUNC_NORMAL,
+};
 
 static int tpa2051_write_reg(u8 reg, u8 val)
 {
@@ -258,27 +254,6 @@ void set_handset_amp(int on)
 	set_amp(on, HANDSET_AMP_ON);
 }
 
-void set_usb_audio_amp(int on)
-{
-	set_amp(on, LINEOUT_AMP_ON);
-}
-
-void set_beats_on(int en)
-{
-	pr_aud_info("%s: %d\n", __func__, en);
-	mutex_lock(&spk_amp_lock);
-	if (en) {
-		tpa2051_i2c_write(BEATS_AMP_ON, AMP_ON_CMD_LEN);
-		pr_info("%s: en(%d) reg_value[5]=%2x, reg_value[6]=%2x\n", __func__,  \
-				en, BEATS_AMP_ON[5], BEATS_AMP_ON[6]);
-	} else {
-		tpa2051_i2c_write(BEATS_AMP_OFF, AMP_ON_CMD_LEN);
-		pr_info("%s: en(%d)  reg_value[5]=%2x, reg_value[6]=%2x\n", __func__,  \
-				en, BEATS_AMP_OFF[5], BEATS_AMP_OFF[6]);
-	}
-	mutex_unlock(&spk_amp_lock);
-}
-
 int update_amp_parameter(int mode)
 {
 	if (mode > tpa2051_mode_cnt)
@@ -295,15 +270,6 @@ int update_amp_parameter(int mode)
 	else if (*(config_data + mode * MODE_CMD_LEM + 1) == HANDSET_OUTPUT)
 		memcpy(HANDSET_AMP_ON, config_data + mode * MODE_CMD_LEM + 2,
 				sizeof(HANDSET_AMP_ON));
-	else if (*(config_data + mode * MODE_CMD_LEM + 1) == BEATS_ON_OUTPUT)
-		memcpy(BEATS_AMP_ON, config_data + mode * MODE_CMD_LEM + 2,
-				sizeof(BEATS_AMP_ON));
-	else if (*(config_data + mode * MODE_CMD_LEM + 1) == BEATS_OFF_OUTPUT)
-		memcpy(BEATS_AMP_OFF, config_data + mode * MODE_CMD_LEM + 2,
-				sizeof(BEATS_AMP_OFF));
-	else if (*(config_data + mode * MODE_CMD_LEM + 1) == LINEOUT_OUTPUT)
-		memcpy(LINEOUT_AMP_ON, config_data + mode * MODE_CMD_LEM + 2,
-				sizeof(LINEOUT_AMP_ON));
 	else {
 		pr_aud_info("wrong mode id %d\n", mode);
 		return -EINVAL;
@@ -328,6 +294,9 @@ static long tpa2051d3_ioctl(struct file *file, unsigned int cmd,
 		pr_info("%s: TPA2051_WRITE_REG\n", __func__);
 		mutex_lock(&spk_amp_lock);
 		if (!last_spkamp_state) {
+			tpa2051pwr.output_value = 1;
+			rc = pm8xxx_gpio_config(pdata->gpio_tpa2051_spk_en,
+							&tpa2051pwr);
 			/* According to tpa2051d3 Spec */
 			mdelay(30);
 		}
@@ -338,6 +307,11 @@ static long tpa2051d3_ioctl(struct file *file, unsigned int cmd,
 		rc = tpa2051_write_reg(reg_value[0], reg_value[1]);
 
 err1:
+		if (!last_spkamp_state) {
+			tpa2051pwr.output_value = 0;
+			pm8xxx_gpio_config(pdata->gpio_tpa2051_spk_en,
+						&tpa2051pwr);
+		}
 		mutex_unlock(&spk_amp_lock);
 		break;
 	case TPA2051_SET_CONFIG:
@@ -352,15 +326,15 @@ err1:
 		else if (spk_cfg[0] == DUAL_OUTPUT)
 			memcpy(RING_AMP_ON, spk_cfg + 1,
 					sizeof(RING_AMP_ON));
-		else if (spk_cfg[0] == LINEOUT_OUTPUT)
-			memcpy(LINEOUT_AMP_ON, spk_cfg + 1,
-					sizeof(LINEOUT_AMP_ON));
 		else
 			return -EINVAL;
 		break;
 	case TPA2051_READ_CONFIG:
 		mutex_lock(&spk_amp_lock);
 		if (!last_spkamp_state) {
+			tpa2051pwr.output_value = 1;
+			rc = pm8xxx_gpio_config(pdata->gpio_tpa2051_spk_en,
+							&tpa2051pwr);
 			/* According to tpa2051d3 Spec */
 			mdelay(30);
 		}
@@ -376,6 +350,11 @@ err1:
 		if (copy_to_user(argp, &tmp, sizeof(tmp)))
 			rc = -EFAULT;
 err2:
+		if (!last_spkamp_state) {
+			tpa2051pwr.output_value = 0;
+			pm8xxx_gpio_config(pdata->gpio_tpa2051_spk_en,
+						&tpa2051pwr);
+		}
 		mutex_unlock(&spk_amp_lock);
 		break;
 	case TPA2051_SET_MODE:
@@ -421,9 +400,7 @@ err2:
 		update_amp_parameter(TPA2051_MODE_PLAYBACK_SPKR);
 		update_amp_parameter(TPA2051_MODE_PLAYBACK_HEADSET);
 		update_amp_parameter(TPA2051_MODE_RING);
-		update_amp_parameter(TPA2051_MODE_PLAYBACK_HEADSET_BEATS_ON);
-		update_amp_parameter(TPA2051_MODE_PLAYBACK_HEADSET_BEATS_OFF);
-		update_amp_parameter(TPA2051_MODE_LINEOUT);
+		update_amp_parameter(TPA2051_MODE_HANDSET);
 		rc = 0;
 		break;
 	default:

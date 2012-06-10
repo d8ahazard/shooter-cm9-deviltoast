@@ -322,6 +322,15 @@ int clk_set_max_rate(struct clk *clk, unsigned long rate)
 }
 EXPORT_SYMBOL(clk_set_max_rate);
 
+int clk_set_min_rate(struct clk *clk, unsigned long rate)
+{
+	if (!clk->ops->set_min_rate)
+		return -ENOSYS;
+
+	return clk->ops->set_min_rate(clk, rate);
+}
+EXPORT_SYMBOL(clk_set_min_rate);
+
 int clk_set_parent(struct clk *clk, struct clk *parent)
 {
 	if (!clk->ops->set_parent)

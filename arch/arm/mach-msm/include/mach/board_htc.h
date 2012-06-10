@@ -145,4 +145,8 @@ struct t_cable_status_notifier{
 };
 int cable_detect_register_notifier(struct t_cable_status_notifier *);
 static LIST_HEAD(g_lh_calbe_detect_notifier_list);
+
+char *get_model_id(void);
+unsigned get_engineerid(void);
+
 #endif

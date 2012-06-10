@@ -45,289 +45,6 @@ static char *board_sn;
 
 #define MFG_GPIO_TABLE_MAX_SIZE        0x400
 static unsigned char mfg_gpio_table[MFG_GPIO_TABLE_MAX_SIZE];
-#if 0
-#ifndef CONFIG_ARCH_MSM7X30
-struct platform_device *devices[] __initdata = {
-	&msm_device_nand,
-	&msm_device_smd,
-	/* &msm_device_i2c, */
-};
-
-void __init msm_add_devices(void)
-{
-	platform_add_devices(devices, ARRAY_SIZE(devices));
-}
-#endif
-
-static struct android_pmem_platform_data pmem_pdata = {
-	.name = "pmem",
-	.no_allocator = PMEM_ALLOCATORTYPE_ALLORNOTHING,
-	.cached = 1,
-};
-
-static struct android_pmem_platform_data pmem_adsp_pdata = {
-	.name = "pmem_adsp",
-	.no_allocator = PMEM_ALLOCATORTYPE_BITMAP,
-#if defined(CONFIG_ARCH_MSM7227) || defined(CONFIG_ARCH_MSM7X30)
-	.cached = 1,
-#else
-	.cached = 0,
-#endif
-};
-
-static struct android_pmem_platform_data pmem_camera_pdata = {
-	.name = "pmem_camera",
-	.no_allocator = PMEM_ALLOCATORTYPE_BITMAP,
-	.cached = 0,
-};
-
-static struct platform_device pmem_device = {
-	.name = "android_pmem",
-	.id = 0,
-	.dev = { .platform_data = &pmem_pdata },
-};
-
-static struct platform_device pmem_adsp_device = {
-	.name = "android_pmem",
-	.id = 1,
-	.dev = { .platform_data = &pmem_adsp_pdata },
-};
-
-static struct platform_device pmem_camera_device = {
-	.name = "android_pmem",
-	.id = 4,
-	.dev = { .platform_data = &pmem_camera_pdata },
-};
-
-static struct resource ram_console_resource[] = {
-	{
-		.flags	= IORESOURCE_MEM,
-	}
-};
-
-static struct platform_device ram_console_device = {
-	.name = "ram_console",
-	.id = -1,
-	.num_resources  = ARRAY_SIZE(ram_console_resource),
-	.resource       = ram_console_resource,
-};
-
-#ifdef CONFIG_MSM_CAMERA_7X30
-static struct resource msm_vpe_resources[] = {
-       {
-               .start  = 0xAD200000,
-               .end    = 0xAD200000 + SZ_1M - 1,
-               .flags  = IORESOURCE_MEM,
-       },
-       {
-               .start  = INT_VPE,
-               .end    = INT_VPE,
-               .flags  = IORESOURCE_IRQ,
-       },
-};
-
-static struct platform_device msm_vpe_device = {
-       .name = "msm_vpe",
-       .id   = 0,
-       .num_resources = ARRAY_SIZE(msm_vpe_resources),
-       .resource = msm_vpe_resources,
-};
-#endif
-
-#if defined(CONFIG_MSM_HW3D)
-static struct resource resources_hw3d[] = {
-	{
-		.start	= 0xA0000000,
-		.end	= 0xA00fffff,
-		.flags	= IORESOURCE_MEM,
-		.name	= "regs",
-	},
-	{
-		.flags	= IORESOURCE_MEM,
-		.name	= "smi",
-	},
-	{
-		.flags	= IORESOURCE_MEM,
-		.name	= "ebi",
-	},
-	{
-		.start	= INT_GRAPHICS,
-		.end	= INT_GRAPHICS,
-		.flags	= IORESOURCE_IRQ,
-		.name	= "gfx",
-	},
-};
-
-static struct platform_device hw3d_device = {
-	.name		= "msm_hw3d",
-	.id		= 0,
-	.num_resources	= ARRAY_SIZE(resources_hw3d),
-	.resource	= resources_hw3d,
-};
-#endif
-
-#if defined(CONFIG_GPU_MSM_KGSL) && !defined(CONFIG_ARCH_MSM8X60)
-static struct resource msm_kgsl_resources[] = {
-	{
-		.name	= "kgsl_reg_memory",
-		.start	= MSM_GPU_REG_PHYS,
-		.end	= MSM_GPU_REG_PHYS + MSM_GPU_REG_SIZE - 1,
-		.flags	= IORESOURCE_MEM,
-	},
-	{
-		.name	= "kgsl_phys_memory",
-		.flags	= IORESOURCE_MEM,
-	},
-	{
-#ifdef CONFIG_ARCH_MSM7X30
-		.name   = "kgsl_yamato_irq",
-		.start  = INT_GRP_3D,
-		.end    = INT_GRP_3D,
-#else
-		.start	= INT_GRAPHICS,
-		.end	= INT_GRAPHICS,
-#endif
-		.flags	= IORESOURCE_IRQ,
-	},
-#ifdef CONFIG_ARCH_MSM7X30
-	{
-		.name   = "kgsl_2d0_reg_memory",
-		.start  = MSM_GPU_2D_REG_PHYS, /* Z180 base address */
-		.end    = MSM_GPU_2D_REG_PHYS + MSM_GPU_2D_REG_SIZE - 1,
-		.flags  = IORESOURCE_MEM,
-	},
-	{
-		.name   = "kgsl_2d0_irq",
-		.start  = INT_GRP_2D,
-		.end    = INT_GRP_2D,
-		.flags  = IORESOURCE_IRQ,
-	},
-#endif
-};
-
-#ifdef CONFIG_ARCH_MSM7X30
-static struct kgsl_platform_data kgsl_pdata = {
-#ifdef CONFIG_MSM_NPA_SYSTEM_BUS
-	/* NPA Flow IDs */
-	.high_axi_3d = MSM_AXI_FLOW_3D_GPU_HIGH,
-	.high_axi_2d = MSM_AXI_FLOW_2D_GPU_HIGH,
-#else
-	/* AXI rates in KHz */
-	.high_axi_3d = 192000,
-	.high_axi_2d = 192000,
-#endif
-	.max_grp2d_freq = 0,
-	.min_grp2d_freq = 0,
-	.set_grp2d_async = NULL, /* HW workaround, run Z180 SYNC @ 192 MHZ */
-	.max_grp3d_freq = 245760000,
-	.min_grp3d_freq = 192000000,
-	.set_grp3d_async = set_grp3d_async,
-	.imem_clk_name = "imem_clk",
-	.grp3d_clk_name = "grp_clk",
-	.grp2d0_clk_name = "grp_2d_clk",
-};
-#endif
-
-static struct platform_device msm_kgsl_device = {
-	.name		= "kgsl",
-	.id		= -1,
-	.resource	= msm_kgsl_resources,
-	.num_resources	= ARRAY_SIZE(msm_kgsl_resources),
-#ifdef CONFIG_ARCH_MSM7X30
-	.dev = {
-		.platform_data = &kgsl_pdata,
-	},
-#endif
-};
-
-#if !defined(CONFIG_ARCH_MSM7X30)
-#define PWR_RAIL_GRP_CLK               8
-static int kgsl_power_rail_mode(int follow_clk)
-{
-       int mode = follow_clk ? 0 : 1;
-       int rail_id = PWR_RAIL_GRP_CLK;
-
-       return msm_proc_comm(PCOM_CLKCTL_RPC_RAIL_CONTROL, &rail_id, &mode);
-}
-
-static int kgsl_power(bool on)
-{
-       int cmd;
-       int rail_id = PWR_RAIL_GRP_CLK;
-
-       cmd = on ? PCOM_CLKCTL_RPC_RAIL_ENABLE : PCOM_CLKCTL_RPC_RAIL_DISABLE;
-       return msm_proc_comm(cmd, &rail_id, NULL);
-}
-#endif
-
-#endif
-
-void __init msm_add_mem_devices(struct msm_pmem_setting *setting)
-{
-	if (setting->pmem_size) {
-		pmem_pdata.start = setting->pmem_start;
-		pmem_pdata.size = setting->pmem_size;
-		platform_device_register(&pmem_device);
-	}
-
-	if (setting->pmem_adsp_size) {
-		pmem_adsp_pdata.start = setting->pmem_adsp_start;
-		pmem_adsp_pdata.size = setting->pmem_adsp_size;
-		platform_device_register(&pmem_adsp_device);
-	}
-
-#if defined(CONFIG_MSM_HW3D)
-	if (setting->pmem_gpu0_size && setting->pmem_gpu1_size) {
-		struct resource *res;
-
-		res = platform_get_resource_byname(&hw3d_device, IORESOURCE_MEM,
-						   "smi");
-		res->start = setting->pmem_gpu0_start;
-		res->end = res->start + setting->pmem_gpu0_size - 1;
-
-		res = platform_get_resource_byname(&hw3d_device, IORESOURCE_MEM,
-						   "ebi");
-		res->start = setting->pmem_gpu1_start;
-		res->end = res->start + setting->pmem_gpu1_size - 1;
-		platform_device_register(&hw3d_device);
-	}
-#endif
-
-	if (setting->pmem_camera_size) {
-		pmem_camera_pdata.start = setting->pmem_camera_start;
-		pmem_camera_pdata.size = setting->pmem_camera_size;
-		platform_device_register(&pmem_camera_device);
-	}
-
-	if (setting->ram_console_size) {
-		ram_console_resource[0].start = setting->ram_console_start;
-		ram_console_resource[0].end = setting->ram_console_start
-			+ setting->ram_console_size - 1;
-		platform_device_register(&ram_console_device);
-	}
-
-#if defined(CONFIG_GPU_MSM_KGSL)&& !defined(CONFIG_ARCH_MSM8X60)
-	if (setting->kgsl_size) {
-		msm_kgsl_resources[1].start = setting->kgsl_start;
-		msm_kgsl_resources[1].end = setting->kgsl_start
-			+ setting->kgsl_size - 1;
-/* due to 7x30 gpu hw bug, we have to apply clk
- * first then power on gpu, thus we move power on
- * into kgsl driver
- */
-#if !defined(CONFIG_ARCH_MSM7X30)
-		kgsl_power_rail_mode(0);
-		kgsl_power(true);
-#endif
-		platform_device_register(&msm_kgsl_device);
-	}
-#endif
-
-#ifdef CONFIG_MSM_CAMERA_7X30
-		platform_device_register(&msm_vpe_device);
-#endif
-}
-#endif
 
 #define PM_LIBPROG      0x30000061
 #if (CONFIG_MSM_AMSS_VERSION == 6220) || (CONFIG_MSM_AMSS_VERSION == 6225)
@@ -767,7 +484,8 @@ int __init tag_ps_parsing(const struct tag *tags)
 __tagtable(ATAG_PS_TYPE, tag_ps_parsing);
 
 #define ATAG_ENGINEERID 0x4d534D75
-unsigned engineer_id;
+unsigned engineer_id = 0;
+
 EXPORT_SYMBOL(engineer_id);
 int __init parse_tag_engineerid(const struct tag *tags)
 {
@@ -935,6 +653,27 @@ int unregister_notifier_by_psensor(struct notifier_block *nb)
 {
 	return blocking_notifier_chain_unregister(&psensor_notifier_list, nb);
 }
+
+#define MID_LEN	(9)
+static char modelid[MID_LEN+1];
+int __init model_id_init(char *s)
+{
+	memset(modelid, 0, sizeof(modelid));
+	strncpy(modelid, s, MID_LEN);
+	return 1;
+}
+__setup("androidboot.mid=", model_id_init);
+
+char *get_model_id(void)
+{
+	return modelid;
+}
+
+unsigned get_engineerid(void)
+{
+	return engineer_id;
+}
+
 
 static char *sku_color_tag = NULL;
 static int __init board_set_qwerty_color_tag(char *get_sku_color)
