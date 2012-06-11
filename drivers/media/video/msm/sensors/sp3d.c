@@ -368,10 +368,10 @@ static int32_t sp3d_spi_write_table(struct sp3d_reg_conf const
 static int sp3d_vreg_enable(const struct msm_camera_sensor_info *sdata)
 {
   int rc = 0;
-  pr_info("[CAM]%s camera vreg on\n", __func__);
+  pr_info("[CAM] %s camera vreg on\n", __func__);
 
   if (sdata->camera_power_on == NULL) {
-    pr_err("[CAM]sensor platform_data didnt register\n");
+    pr_err("[CAM] sensor platform_data didnt register\n");
     return -EIO;
   }
   rc = sdata->camera_power_on();
@@ -382,11 +382,11 @@ static int sp3d_vreg_enable(const struct msm_camera_sensor_info *sdata)
 static int sp3d_vreg_disable(const struct msm_camera_sensor_info *data)
 {
   int rc = 0;
-  pr_info("[CAM]%s camera vreg off\n", __func__);
+  pr_info("[CAM] %s camera vreg off\n", __func__);
   data->pdata->camera_gpio_off();
   mdelay(10);
   if (data->camera_power_off == NULL) {
-    pr_err("[CAM]sensor platform_data didnt register\n");
+    pr_err("[CAM] sensor platform_data didnt register\n");
     return -EIO;
   }
   rc = data->camera_power_off();
@@ -408,11 +408,11 @@ static void sp3d_check_reg_status(void){
 		sp3d_spi_write(0x0490,0x0006);
 		sp3d_spi_read(0x04A2, &rval);
 		if(rval == 0x80){/*MIPI enabled*/
-			pr_info("[CAM]%s got MIPI signal from sharp",__func__);
+			pr_info("[CAM] %s got MIPI signal from sharp",__func__);
 			break;
 		}
 		if(count > 200){
-			pr_info("[CAM]%s check reg time out",__func__);
+			pr_info("[CAM] %s check reg time out",__func__);
 			break;
 		}
 	}
@@ -423,7 +423,7 @@ static int sp3d_wait_2Dstate(enum sp3d_2Dsnapshot_state_e state){
 		atomic_read(&sp3d_2Dsnapshot_state) == state,
 		msecs_to_jiffies(1000));
 	smp_mb();
-	pr_info("[CAM]sp3d_wait_state wait done sp3d_2Dsnapshot_state:%d",atomic_read(&sp3d_2Dsnapshot_state));
+	pr_info("[CAM] sp3d_wait_state wait done sp3d_2Dsnapshot_state:%d",atomic_read(&sp3d_2Dsnapshot_state));
 	return 0;
 }
 
@@ -433,7 +433,7 @@ static int sp3d_wait_state(enum sp3d_snapshot_state_e state){
 		atomic_read(&sp3d_snapshot_state) == state,
 		msecs_to_jiffies(1000));
 	smp_mb();
-	pr_info("[CAM]sp3d_wait_state wait done sp3d_snapshot_state:%d",atomic_read(&sp3d_snapshot_state));
+	pr_info("[CAM] sp3d_wait_state wait done sp3d_snapshot_state:%d",atomic_read(&sp3d_snapshot_state));
 	return 0;
 }
 
@@ -455,7 +455,7 @@ static int sp3d_wait_INT(int frame){
 
 static int sp3d_video_setting(void){
 	int rc = 0;
-	pr_info("[CAM]sp3d_video_setting");
+	pr_info("[CAM] sp3d_video_setting");
 	rc = sp3d_spi_write_table(sp3d_2D_regs.reg_koj_2d_720p_video,
                                sp3d_2D_regs.reg_koj_2d_720p_video_size);
 	/*waitint for state transfer*/
@@ -467,7 +467,7 @@ static int sp3d_video_setting(void){
 static int sp3d_preview_setting(void){
 	int rc = 0;
 	
-	pr_info("[CAM]sp3d_preview_setting");
+	pr_info("[CAM] sp3d_preview_setting");
 	if ( dmode == CAMERA_2D_MODE ) {
 		rc = sp3d_spi_write_table(sp3d_2D_regs.reg_koj_2d_preview,
                                sp3d_2D_regs.reg_koj_2d_preview_size);
@@ -496,7 +496,7 @@ static void sp3d_read_shutter_status(void){
 	sp3d_spi_write(0x0490,0x0006);
 	/*read*/
 	rc = sp3d_spi_read(0x04A2, &val);
-	pr_info("[CAM]shutter on status val:0x%x",val);
+	pr_info("[CAM] shutter on status val:0x%x",val);
 	sp3d_spi_write(0x0490,0x0006);
 }
 
@@ -529,7 +529,7 @@ static inline int task_has_rt_policy(struct task_struct *p)
 
 static int sp3d_3D_get_L_frame(void){
 	int rc = 0;
-	pr_info("[CAM]sp3d 3D shutter mixer setting on full resolution master");
+	pr_info("[CAM] sp3d 3D shutter mixer setting on full resolution master");
 	rc = sp3d_spi_write_table(sp3d_snapshot_regs.reg_koj_3d_shutter_full_m,
 		sp3d_snapshot_regs.reg_koj_3d_shutter_full_m_size);
 	if(rc < 0)
@@ -575,7 +575,7 @@ static int sp3d_3D_get_R_frame(void){
 	sp3d_config_csi_param(&sp3d_csi_params);
 	rc = msm_camio_csi_config_withReceiverDisabled(&sp3d_csi_params);
 
-	pr_info("[CAM]sp3d 3D shutter mixer setting on full resolution slave");
+	pr_info("[CAM] sp3d 3D shutter mixer setting on full resolution slave");
 #if 0
 	if(flash_state) {
 		flash_state = false;
@@ -666,10 +666,10 @@ SP3D_RECHECKCPU:
 	if(val == 0x01){
 		sp3d_check_count++;
 		if(sp3d_check_count > 20){
-			pr_info("[CAM]sp3d check CPU timeout:%d val:0x%x ",command,val);
+			pr_info("[CAM] sp3d check CPU timeout:%d val:0x%x ",command,val);
 			return 0;
 		}else{
-			pr_info("[CAM]sp3d recheck CPU:%d val:0x%x",command,val);
+			pr_info("[CAM] sp3d recheck CPU:%d val:0x%x",command,val);
 			goto SP3D_RECHECKCPU;
 		}
 	}
@@ -686,28 +686,28 @@ SP3D_RECHECKVALUE:
 	if(val == 0x8f){
 		sp3d_check_count ++;
 		if(sp3d_check_count > 20){
-			pr_info("[CAM]sp3d recheck value timeout:%d val:0x%x",command,val);
+			pr_info("[CAM] sp3d recheck value timeout:%d val:0x%x",command,val);
 			return 0;
 		}else{
-			pr_info("[CAM]sp3d recheck value:%d val:0x%x",command,val);
+			pr_info("[CAM] sp3d recheck value:%d val:0x%x",command,val);
 			goto SP3D_RECHECKVALUE;
 		}
 	}else if(val == 0x80){
-		pr_info("[CAM]sp3d value check ACK : %d",command);
+		pr_info("[CAM] sp3d value check ACK : %d",command);
 		return 0;
 	}else if(val == 0x81){
 		sp3d_check_count ++;
 		if(sp3d_check_count>20){
-			pr_info("[CAM]sp3d check NACK timeout:%d val:0x%x",command,val);
+			pr_info("[CAM] sp3d check NACK timeout:%d val:0x%x",command,val);
 			return 0;
 		}else{
-			pr_info("[CAM]sp3d value check NACK :%d sp3d_check_count:%d",
+			pr_info("[CAM] sp3d value check NACK :%d sp3d_check_count:%d",
 				command,sp3d_check_count);
 			sp3d_wait_INT(1);
 			goto SP3D_RECHECKVALUE;
 		}
 	}else{
-		pr_info("[CAM]sp3d unkonw status val:0x%x",val);
+		pr_info("[CAM] sp3d unkonw status val:0x%x",val);
 		return 1;
 	}
 }
@@ -716,7 +716,7 @@ static void sp3d_check_cpu_status(void){
 	uint16_t val =0;
 	int rc = 0;
 	/*write*/
-	pr_info("[CAM]---------- sp3d_check_cpu_status");
+	pr_info("[CAM] ---------- sp3d_check_cpu_status");
 SP3D_RECHECK:
 	sp3d_spi_write(0x0492,0x33F8);
 	sp3d_spi_write(0x049A,0x020F);
@@ -727,16 +727,16 @@ SP3D_RECHECK:
 	sp3d_spi_write(0x0490,0x0006);
 	/*read*/
 	rc = sp3d_spi_read(0x04A2, &val);
-	pr_info("[CAM]sp3d check cpu status:0x%x",val);
+	pr_info("[CAM] sp3d check cpu status:0x%x",val);
 #if 1
 	/*CPU not ready*/
 	if(val == 0x8f){
-		pr_info("[CAM]sp3d cpu not ready, wait till cpu ready");
+		pr_info("[CAM] sp3d cpu not ready, wait till cpu ready");
 		goto SP3D_RECHECK;
 	}
 	/*AF not stable, send cancel focus*/
 	if(val == 0x91 || val == 0x82 || val == 0x81){
-		pr_info("[CAM]sp3d AF not ready yet, waiting for AF ready");
+		pr_info("[CAM] sp3d AF not ready yet, waiting for AF ready");
 		rc = sp3d_spi_write_table(sp3d_com_feature_regs.reg_pat_koj_cancel_af,
                                sp3d_com_feature_regs.reg_pat_koj_cancel_af_size);
 		sp3d_wait_INT(4);
@@ -754,8 +754,8 @@ static int sp3d_start_snapshot(void){
 	int old_policy = current->policy;
 	int cap_nice;
 
-	pr_info("[CAM]sp3d_snapshot_setting");
-	pr_info("[CAM]KPI PA: start sensor snapshot config: %d\n", __LINE__);
+	pr_info("[CAM] sp3d_snapshot_setting");
+	pr_info("[CAM] KPI PA: start sensor snapshot config: %d\n", __LINE__);
 	sdata->kpi_sensor_start = ktime_to_ns(ktime_get());
 	atomic_set(&snapshot_flag,true);
 	atomic_set(&preview_flag,false);
@@ -782,9 +782,9 @@ static int sp3d_start_snapshot(void){
                                sp3d_snapshot_regs.reg_koj_continue3_shutter_size);
 		atomic_set(&sp3d_2Dsnapshot_state, SP3D_2DCONTINUE_SHUTTER);
 		sp3d_wait_2Dstate(SP3D_2DSHUTTER_ON);
-		pr_info("[CAM]sp3d shutter on");
+		pr_info("[CAM] sp3d shutter on");
 		if(flash_state){
-			pr_info("[CAM]sp3d flash_exp_div=0x%x\n", flashlight_exp_div);
+			pr_info("[CAM] sp3d flash_exp_div=0x%x\n", flashlight_exp_div);
 			sp3d_snapshot_regs.reg_koj_shutter_on_evoffset[SP3D_REG_FLAHS_DIV_1].wdata
 				= sp3d_snapshot_regs.reg_koj_shutter_on_evoffset[SP3D_REG_FLAHS_DIV_2].wdata
 				= SP3D_FLASHLIGHT_BASE + flashlight_exp_div;
@@ -815,7 +815,7 @@ static int sp3d_start_snapshot(void){
 		sp3d_config_csi_param(&sp3d_csi_params);
 		rc = msm_camio_csi_config_withReceiverDisabled(&sp3d_csi_params);
 		sp3d_read_shutter_status();
-		pr_info("[CAM]sp3d 2D shutter mixer setting on full resolution");
+		pr_info("[CAM] sp3d 2D shutter mixer setting on full resolution");
 		rc = sp3d_spi_write_table(sp3d_snapshot_regs.reg_koj_2d_shutter_full,
                                sp3d_snapshot_regs.reg_koj_2d_shutter_full_size);
 		if(rc < 0){
@@ -856,9 +856,9 @@ static int sp3d_start_snapshot(void){
 		smp_mb();
 		sp3d_wait_state(SP3D_SHUTTER_ON);
 		/*wait interrupt*/
-		pr_info("[CAM]sp3d shutter on\n");
+		pr_info("[CAM] sp3d shutter on\n");
 		if(flash_state){
-			pr_info("[CAM]sp3d flash_exp_div=0x%x\n", flashlight_exp_div);
+			pr_info("[CAM] sp3d flash_exp_div=0x%x\n", flashlight_exp_div);
 			sp3d_snapshot_regs.reg_koj_shutter_on_evoffset[SP3D_REG_FLAHS_DIV_1].wdata
 				= sp3d_snapshot_regs.reg_koj_shutter_on_evoffset[SP3D_REG_FLAHS_DIV_2].wdata
 				= SP3D_FLASHLIGHT_BASE + flashlight_exp_div;
@@ -885,34 +885,34 @@ int sp2d_init_setting_thread(void){
 	
 		int rc = 0;
 
-        pr_info("[CAM]%s reg_para8_koj_stop_htc_s\n",__func__);
+        pr_info("[CAM] %s reg_para8_koj_stop_htc_s\n",__func__);
 #if 1 /*take off due to 2D mode dosent need this setting suggest by sharp*/
 		rc = sp3d_spi_write_table(sp3d_2D_regs.reg_para8_koj_stop_htc_s,
                                sp3d_2D_regs.reg_para8_koj_stop_htc_s_size);
 		if(SP3D_CHECK_SPI(rc) < 0 ) return rc;
 
-		pr_info("[CAM]%s reg_para9_koj_scs_main_htc_s\n",__func__);
+		pr_info("[CAM] %s reg_para9_koj_scs_main_htc_s\n",__func__);
 		rc = sp3d_spi_write_table(sp3d_2D_regs.reg_para9_koj_scs_main_htc_s,
                                sp3d_2D_regs.reg_para9_koj_scs_main_htc_s_size);
 		if(SP3D_CHECK_SPI(rc) < 0 ) return rc;
 
-		pr_info("[CAM]%s reg_para10_koj_start_htc_s\n",__func__);
+		pr_info("[CAM] %s reg_para10_koj_start_htc_s\n",__func__);
 		rc = sp3d_spi_write_table(sp3d_2D_regs.reg_para10_koj_start_htc_s,
                                sp3d_2D_regs.reg_para10_koj_start_htc_s_size);
 		if(SP3D_CHECK_SPI(rc) < 0 ) return rc;
 #endif
 
-		pr_info("[CAM]%s reg_para11_koj_stop_htc_m\n",__func__);
+		pr_info("[CAM] %s reg_para11_koj_stop_htc_m\n",__func__);
 		rc = sp3d_spi_write_table(sp3d_2D_regs.reg_para11_koj_stop_htc_m,
                                sp3d_2D_regs.reg_para11_koj_stop_htc_m_size);
 		if(SP3D_CHECK_SPI(rc) < 0 ) return rc;
 
-		pr_info("[CAM]%s reg_para12_koj_scs_main_htc_m\n",__func__);
+		pr_info("[CAM] %s reg_para12_koj_scs_main_htc_m\n",__func__);
 		rc = sp3d_spi_write_table(sp3d_2D_regs.reg_para12_koj_scs_main_htc_m,
                                sp3d_2D_regs.reg_para12_koj_scs_main_htc_m_size);
 		if(SP3D_CHECK_SPI(rc) < 0 ) return rc;
 
-		pr_info("[CAM]%s reg_para13_koj_start_htc_m\n",__func__);
+		pr_info("[CAM] %s reg_para13_koj_start_htc_m\n",__func__);
 		rc = sp3d_spi_write_table(sp3d_2D_regs.reg_para13_koj_start_htc_m,
                                sp3d_2D_regs.reg_para13_koj_start_htc_m_size);
 		if(SP3D_CHECK_SPI(rc) < 0 ) return rc;
@@ -922,7 +922,7 @@ int sp2d_init_setting_thread(void){
 		sp3d_check_reg_status();
 		sp3d_wait_INT(1);
 		sp3d_preview_setting();
-		pr_info("[CAM]%s CPU init setting done",__func__);
+		pr_info("[CAM] %s CPU init setting done",__func__);
 		atomic_set(&preview_flag,true);
 		return rc;
 }
@@ -930,32 +930,32 @@ int sp2d_init_setting_thread(void){
 
 int sp3d_init_setting_thread(void){
 	int rc = 0;
-	pr_info("[CAM]%s reg_para8_koj_stop_htc_s\n",__func__);
+	pr_info("[CAM] %s reg_para8_koj_stop_htc_s\n",__func__);
 	rc = sp3d_spi_write_table(sp3d_3D_regs.reg_para8_koj_stop_htc_s,
 			sp3d_3D_regs.reg_para8_koj_stop_htc_s_size);
 	if(SP3D_CHECK_SPI(rc) < 0 ) return rc;
 
-	pr_info("[CAM]%s reg_para9_koj_scs_main_htc_s\n",__func__);
+	pr_info("[CAM] %s reg_para9_koj_scs_main_htc_s\n",__func__);
 	rc = sp3d_spi_write_table(sp3d_3D_regs.reg_para9_koj_scs_main_htc_s,
 			sp3d_3D_regs.reg_para9_koj_scs_main_htc_s_size);
 	if(SP3D_CHECK_SPI(rc) < 0 ) return rc;
 
-	pr_info("[CAM]%s reg_para10_koj_start_htc_s\n",__func__);
+	pr_info("[CAM] %s reg_para10_koj_start_htc_s\n",__func__);
 	rc = sp3d_spi_write_table(sp3d_3D_regs.reg_para10_koj_start_htc_s,
 			sp3d_3D_regs.reg_para10_koj_start_htc_s_size);
 	if(SP3D_CHECK_SPI(rc) < 0 ) return rc;
 
-	pr_info("[CAM]%s reg_para11_koj_stop_htc_m\n",__func__);
+	pr_info("[CAM] %s reg_para11_koj_stop_htc_m\n",__func__);
 	rc = sp3d_spi_write_table(sp3d_3D_regs.reg_para11_koj_stop_htc_m,
 			sp3d_3D_regs.reg_para11_koj_stop_htc_m_size);
 	if(SP3D_CHECK_SPI(rc) < 0 ) return rc;
 
-	pr_info("[CAM]%s reg_para12_koj_scs_main_htc_m\n",__func__);
+	pr_info("[CAM] %s reg_para12_koj_scs_main_htc_m\n",__func__);
 	rc = sp3d_spi_write_table(sp3d_3D_regs.reg_para12_koj_scs_main_htc_m,
 			sp3d_3D_regs.reg_para12_koj_scs_main_htc_m_size);
 	if(SP3D_CHECK_SPI(rc) < 0 ) return rc;
 
-	pr_info("[CAM]%s reg_para13_koj_start_htc_m\n",__func__);
+	pr_info("[CAM] %s reg_para13_koj_start_htc_m\n",__func__);
 	rc = sp3d_spi_write_table(sp3d_3D_regs.reg_para13_koj_start_htc_m,
 			sp3d_3D_regs.reg_para13_koj_start_htc_m_size);
 	if(SP3D_CHECK_SPI(rc) < 0 ) return rc;
@@ -965,7 +965,7 @@ int sp3d_init_setting_thread(void){
 	sp3d_check_reg_status();
 	sp3d_wait_INT(1);
 	sp3d_preview_setting();
-	pr_info("[CAM]%s CPU init setting done",__func__);
+	pr_info("[CAM] %s CPU init setting done",__func__);
 	atomic_set(&preview_flag,true);
 	return rc;
 }
@@ -994,7 +994,7 @@ static irqreturn_t sp3d_irq_handler(int irq, void *dev_id){
 	if(atomic_read(&snapshot_flag)){
 		if(atomic_read(&sp3d_snapshot_state) != SP3D_2DSNAPSHOT_NOT_START ||
 			atomic_read(&sp3d_2Dsnapshot_state) != SP3D_SNAPSHOT_NOT_START){
-			pr_info("[CAM]----------Got INT from sharp state3D:%d state2D:%d---------------"
+			pr_info("[CAM] ----------Got INT from sharp state3D:%d state2D:%d---------------"
 			,atomic_read(&sp3d_snapshot_state)
 			,atomic_read(&sp3d_2Dsnapshot_state));
 		}
@@ -1013,7 +1013,7 @@ static int sp3d_create_irq(void){
 
 static int sp3d_2D_init_setting(void){
 	int rc = 0;
-	pr_info("[CAM]sp3d init in 2D mode");
+	pr_info("[CAM] sp3d init in 2D mode");
 	rc = sp3d_spi_write_table(sp3d_2D_regs.reg_para1_koj_mixer_2d_htc,
 			sp3d_2D_regs.reg_para1_koj_mixer_2d_htc_size);
 	if (SP3D_CHECK_SPI(rc) < 0) return rc;
@@ -1081,7 +1081,7 @@ static int sp3d_2D_init_setting(void){
 
 static int sp3d_3D_init_setting(void){
 	int rc = 0;
-	pr_info("[CAM]sp3d init in 3D mode");
+	pr_info("[CAM] sp3d init in 3D mode");
 	rc = sp3d_spi_write_table(sp3d_3D_regs.reg_para1_koj_mixer_3d_htc,
 		sp3d_3D_regs.reg_para1_koj_mixer_3d_htc_size);
 	if (SP3D_CHECK_SPI(rc) < 0) return rc;
@@ -1153,13 +1153,13 @@ static int32_t sp3d_sensor_setting(int update_type, int rt)
 	int32_t rc = 0;
 	
 	struct msm_camera_csi_params sp3d_csi_params;
-	pr_info("[CAM]sp3d_sensor_setting type:%d config:%d\n",update_type, rt);
+	pr_info("[CAM] sp3d_sensor_setting type:%d config:%d\n",update_type, rt);
 	switch (update_type) {
 	case REG_INIT:
 		/*create irq*/
 		rc = sp3d_create_irq();
 		if(rc < 0)
-			pr_err("[CAM]request GPIO irq error");
+			pr_err("[CAM] request GPIO irq error");
 		sp3d_state = SP3D_PREVIEW_MODE;
 		break;
 	case UPDATE_PERIODIC:/*3D*/
@@ -1169,7 +1169,7 @@ static int32_t sp3d_sensor_setting(int update_type, int rt)
 			mdelay(5);
 			msm_camio_csi_core_on();
 			mdelay(5);
-			pr_info("[CAM]csi_config");
+			pr_info("[CAM] csi_config");
 			sp3d_config_csi_param(&sp3d_csi_params);
 			rc = msm_camio_csi_config_withReceiverDisabled(&sp3d_csi_params);
 			config_csi = 1;
@@ -1341,7 +1341,7 @@ static int sp3d_probe_init_sensor(const struct msm_camera_sensor_info *data)
 {
 	int32_t rc = 0;
 	uint16_t val;
-	pr_info("[CAM]%s\n", __func__);
+	pr_info("[CAM] %s\n", __func__);
 	/* read registers and to verify:
 	 * 1. 0x078  default value: 0x7eaf
 	 * 2. 0x13c  default value: 0x01df
@@ -1349,14 +1349,14 @@ static int sp3d_probe_init_sensor(const struct msm_camera_sensor_info *data)
 	rc = sp3d_spi_read(0x78, &val);
 	if (SP3D_CHECK_SPI(rc) < 0) return rc;
 	mdelay(1);
-	pr_info("[CAM]read 0x78, val = %x\n", val);
+	pr_info("[CAM] read 0x78, val = %x\n", val);
 	if (val != 0x7eaf)
 		return -EFAULT;
 
 	rc = sp3d_spi_read(0x13c, &val);
 	if (SP3D_CHECK_SPI(rc) < 0) return rc;
 	mdelay(1);
-	pr_info("[CAM]read 0x13c, val = %x\n", val);
+	pr_info("[CAM] read 0x13c, val = %x\n", val);
 	if (val != 0x01df)
 		return -EFAULT;
 
@@ -1368,14 +1368,14 @@ int sp3d_spi_open_init(struct msm_camera_sensor_info *data)
 {
 	int32_t rc = 0;
 
-	pr_info("[CAM]%s: %d\n", __func__, __LINE__);
+	pr_info("[CAM] %s: %d\n", __func__, __LINE__);
 	if(data == NULL){
 		pr_info("data pointer is NULL");
 		return -1;
 	}
 	sp3d_ctrl = kzalloc(sizeof(struct sp3d_spi_ctrl), GFP_KERNEL);
 	if (!sp3d_ctrl) {
-		pr_err("[CAM]sp3d_init failed!\n");
+		pr_err("[CAM] sp3d_init failed!\n");
 		rc = -ENOMEM;
 		goto init_done;
 	}
@@ -1389,7 +1389,7 @@ int sp3d_spi_open_init(struct msm_camera_sensor_info *data)
 	config_csi = 0;
 	sp3d_vreg_enable(data);
 	data->pdata->camera_gpio_on();
-	pr_info("[CAM]sp3d: sp3d_sensor_probe: switch clk\n");
+	pr_info("[CAM] sp3d: sp3d_sensor_probe: switch clk\n");
 	if(data->camera_clk_switch != NULL)
 		data->camera_clk_switch();
 
@@ -1440,13 +1440,13 @@ static int __exit sp3d_spi_remove(struct spi_device *spi)
 static int sp3d_auto_focus(void)
 {
 	int rc = 0;
-	pr_info("[CAM]---------- sp3d_auto_focus");
+	pr_info("[CAM] ---------- sp3d_auto_focus");
 	sp3d_wait_INT(1);
 	rc = sp3d_spi_write_table2(sp3d_com_feature_regs.reg_pat_koj_af,
                                sp3d_com_feature_regs.reg_pat_koj_af_size);
 	if (SP3D_CHECK_SPI(rc) < 0) return rc;
 
-	pr_info("[CAM]%s",__func__);
+	pr_info("[CAM] %s",__func__);
 	/*delay 2 frame in case we get worng status from sharp AF status register*/
 	sp3d_wait_INT(2);
 	return rc;
@@ -1455,13 +1455,13 @@ static int sp3d_auto_focus(void)
 static int sp3d_cancel_focus(void)
 {
 	int rc = 0;
-	pr_info("[CAM]---------- sp3d_cancel_focus");
+	pr_info("[CAM] ---------- sp3d_cancel_focus");
 	sp3d_wait_INT(1);
 	rc = sp3d_spi_write_table2(sp3d_com_feature_regs.reg_pat_koj_cancel_af,
                                sp3d_com_feature_regs.reg_pat_koj_cancel_af_size);
 	if (SP3D_CHECK_SPI(rc) < 0) return rc;
 
-	pr_info("[CAM]%s",__func__);
+	pr_info("[CAM] %s",__func__);
 	return rc;
 
 }
@@ -1480,12 +1480,12 @@ static int sp3d_get_af_state(void){
 	/*read*/
 	rc = sp3d_spi_read(0x04A2, &val);
 
-	pr_info("[CAM]sp3d get AF state val:0x%x ",val);
+	pr_info("[CAM] sp3d get AF state val:0x%x ",val);
 	if(rc < 0)
-		pr_err("[CAM]sp3d get AF state faile");
+		pr_err("[CAM] sp3d get AF state faile");
 	/*AF status*/
 	if(val == 0x10){
-		pr_info("[CAM]sp3d AF done");
+		pr_info("[CAM] sp3d AF done");
 		goto finish;
 	}
 	temp = val &(0x0001<<5);
@@ -1493,15 +1493,15 @@ static int sp3d_get_af_state(void){
 	if(temp){
 		goto faile;
 	}else{
-		pr_err("[CAM]sp3d lens not moving");
+		pr_err("[CAM] sp3d lens not moving");
 	}
 	temp = val &(0x0001<<6);
 	/*lens position*/
 	if(temp){
-		pr_info("[CAM]sp3d SAF is moving");
+		pr_info("[CAM] sp3d SAF is moving");
 		goto faile;
 	}else{
-		pr_info("[CAM]sp3d stop SAF");
+		pr_info("[CAM] sp3d stop SAF");
 	}
 finish:
 	return 0;
@@ -1554,7 +1554,7 @@ static int sp3d_set_effect(int8_t effect_type)
 	rc = -EFAULT;
 		break;
 	}
-	pr_info("[CAM]%s",__func__);
+	pr_info("[CAM] %s",__func__);
 	return rc;
 
 }
@@ -1629,7 +1629,7 @@ static int sp3d_set_iso(enum iso_mode iso_type)
 	rc = -EFAULT;
 		break;
 	}
-	pr_info("[CAM]%s",__func__);
+	pr_info("[CAM] %s",__func__);
 	return rc;
 
 }
@@ -1667,7 +1667,7 @@ static int sp3d_set_wb(enum wb_mode wb_type)
 	rc = -EFAULT;
 		break;
 	}
-	pr_info("[CAM]%s",__func__);
+	pr_info("[CAM] %s",__func__);
 	return rc;
 }
 
@@ -1703,7 +1703,7 @@ static int sp3d_set_ev(enum brightness_t ev_type)
 	rc = -EFAULT;	
 		break;
 	}
-	pr_info("[CAM]%s",__func__);
+	pr_info("[CAM] %s",__func__);
 	return rc;
 }
 
@@ -1732,7 +1732,7 @@ static int sp3d_set_antibanding(enum antibanding_mode antibanding_type)
 		break;
 	}
 	g_antibanding_type = antibanding_type;
-	pr_info("[CAM]%s: antibanding_type: %d, rc = %d\n", __func__, antibanding_type, rc);
+	pr_info("[CAM] %s: antibanding_type: %d, rc = %d\n", __func__, antibanding_type, rc);
 	return rc;
 }
 
@@ -1768,7 +1768,7 @@ static int sp3d_set_contrast(enum contrast_mode contrast_type)
 	rc = -EFAULT;	
 		break;
 	}
-	pr_info("[CAM]%s",__func__);
+	pr_info("[CAM] %s",__func__);
 	return rc;
 }
 
@@ -1812,7 +1812,7 @@ static int sp3d_set_sharpness(enum sharpness_mode sharpness_type)
 	rc = -EFAULT;	
 		break;
 	}
-	pr_info("[CAM]%s sharpness_type:%d",__func__,sharpness_type);
+	pr_info("[CAM] %s sharpness_type:%d",__func__,sharpness_type);
 	return rc;
 }
 
@@ -1847,13 +1847,13 @@ static int sp3d_set_saturation(enum saturation_mode saturation_type)
 	rc = -EFAULT;	
 		break;
 	}
-	pr_info("[CAM]%s",__func__);
+	pr_info("[CAM] %s",__func__);
 	return rc;
 }
 
 
 static void sp3d_set_mode(int mode){
-	pr_info("[CAM]sp3d_set_mode:%d",mode);
+	pr_info("[CAM] sp3d_set_mode:%d",mode);
 	dmode = mode;
 }
 
@@ -1864,7 +1864,7 @@ static int sp3d_set_af_mode( enum sensor_af_mode af_mode_value)
 	if(atomic_read(&snapshot_flag) || !atomic_read(&preview_flag))
 		return rc;
 	sp3d_wait_INT(1);
-	pr_info("[CAM]-------  sp3d_set_af_mode:%d",af_mode_value);
+	pr_info("[CAM] -------  sp3d_set_af_mode:%d",af_mode_value);
 	switch (af_mode_value) {
 	case SENSOR_AF_MODE_NORMAL:
 		rc = sp3d_spi_write_table2(sp3d_com_feature_regs.reg_koj_af_mode_normal,
@@ -1882,7 +1882,7 @@ static int sp3d_set_af_mode( enum sensor_af_mode af_mode_value)
 	rc = -EFAULT;
 		break;
 	}
-	pr_info("[CAM]%s",__func__);
+	pr_info("[CAM] %s",__func__);
 	return rc;
 }
 
@@ -1925,7 +1925,7 @@ static int  sp3d_set_af_area(int af_area){
 	/*# 0D0D:22*/
 	rc = sp3d_spi_write(0x049A, 0x0522); if(SP3D_CHECK_SPI(rc)<0) return rc;
 	rc = sp3d_spi_write(0x0490, 0x0402); if(SP3D_CHECK_SPI(rc)<0) return rc;
-	pr_info("[CAM]%s",__func__);
+	pr_info("[CAM] %s",__func__);
 	return rc;
 }
 
@@ -2220,15 +2220,15 @@ static int sp3d_check_Ext_Stable(struct flash_cfg* flash_data){
 	for(i=0;i<timeout;i++){
 		exp_pre = sp3d_read_Ext_mode(ExtTblIndx);
 		iris_pre = sp3d_read_Ext_mode(IrisRatio);
-		pr_info("[CAM]sp3d_flashlight check stable IrisR:0x%x ExtIndx:0x%x ExtMax:0x%x",iris_pre,exp_pre,ExtMax);
+		pr_info("[CAM] sp3d_flashlight check stable IrisR:0x%x ExtIndx:0x%x ExtMax:0x%x",iris_pre,exp_pre,ExtMax);
 		if(i >= 2 && iris_pre > Alpha && iris_pre < beta){/*checking after first 2 frame*/
-			pr_info("[CAM]sp3d_flashlight Exposure stable");
+			pr_info("[CAM] sp3d_flashlight Exposure stable");
 			break;
 		}else
 			mdelay(100);
 	}
 	if (i == timeout)
-		pr_info("[CAM]sp3d_flashlight pre flash time out");
+		pr_info("[CAM] sp3d_flashlight pre flash time out");
 	flash_data->exp_off = exp_off;
 	flash_data->exp_pre = exp_pre;
 	flash_data->luma_off = iris_off;
@@ -2332,17 +2332,17 @@ static int sp3d_make_decision(void){
 		ExtMax = sp3d_read_Ext_mode(ExtTblMax);
 		exp_off = sp3d_read_Ext_mode(ExtTblIndx);
 		iris_off = sp3d_read_Ext_mode(IrisRatio);
-		pr_info("[CAM]sp3d_flashlight make decision iris_off:0x%x exp_off:0x%x\n",iris_off,exp_off);
+		pr_info("[CAM] sp3d_flashlight make decision iris_off:0x%x exp_off:0x%x\n",iris_off,exp_off);
 		iris_ave = iris_ave + iris_off;
 	}
 	iris_off = iris_ave/SP3D_EXP_AVERAGE;
-	pr_info("[CAM]sp3d_flashlight make decision IrisR:0x%x ExtIndx:0x%x ExtMax:0x%x",
+	pr_info("[CAM] sp3d_flashlight make decision IrisR:0x%x ExtIndx:0x%x ExtMax:0x%x",
 		iris_off,exp_off,ExtMax);
 	if(iris_off >= Alpha){
-		pr_info("[CAM]sp3d_flashlight make decision turn OFF flash");
+		pr_info("[CAM] sp3d_flashlight make decision turn OFF flash");
 		return false;/*do not need to use flash*/
 	}else{
-		pr_info("[CAM]sp3d_flashlight make decision turn ON flash");
+		pr_info("[CAM] sp3d_flashlight make decision turn ON flash");
 		return true;
 	}
 }
@@ -2361,7 +2361,7 @@ static int sp3d_set_flashlight(int flash_mode, struct flash_cfg* flash_data){
 	flash_state = sp3d_make_decision();
 	if((flash_mode == 1/*flash auto*/ && flash_state)||flash_mode == 2/*flash on*/){
 		flash_state = true;
-		pr_info("[CAM]sp3d_flashlight flash on");
+		pr_info("[CAM] sp3d_flashlight flash on");
 		sdata->flash_data->flash_src->camera_flash(FL_MODE_PRE_FLASH);
 		rc = sp3d_check_Ext_Stable(flash_data);
 	} else
@@ -2388,18 +2388,18 @@ int sp3d_spi_config_temp(void *data)
 
 	switch (cdata->cfgtype) {
 	case CFG_SET_MODE:	
-		pr_info("[CAM]SP3D Send Capture command\n");
+		pr_info("[CAM] SP3D Send Capture command\n");
 		rc = sp3d_set_sensor_mode(cdata->mode,
 			cdata->rs);
 		break;
 
 	case CFG_GET_SP3D_L_FRAME:
-		pr_info("[CAM]SP3D Send L Frame command\n");
+		pr_info("[CAM] SP3D Send L Frame command\n");
 		rc = sp3d_3D_get_L_frame();
 		break;
 
 	case CFG_GET_SP3D_R_FRAME:
-		pr_info("[CAM]SP3D Send R Frame command\n");
+		pr_info("[CAM] SP3D Send R Frame command\n");
 		rc = sp3d_3D_get_R_frame();
 		break;
 
@@ -2426,7 +2426,7 @@ int sp3d_spi_config(void __user *argp)
 	case CFG_SET_MODE:
 		if ((dmode == CAMERA_3D_MODE) && (cdata.mode == SENSOR_SNAPSHOT_MODE))
 		{
-			pr_info("[CAM]bypass snapshot here\n");
+			pr_info("[CAM] bypass snapshot here\n");
 			rc = 0;
 		}
 		else
@@ -2476,7 +2476,7 @@ int sp3d_spi_config(void __user *argp)
 		rc = sp3d_set_calibration(&cdata.cfg.sp3d_otp_cfg);
 		if(copy_to_user((void *)argp,
 			&cdata,sizeof(struct sensor_cfg_data))){
-			pr_err("[CAM]%s copy to user error",__func__);
+			pr_err("[CAM] %s copy to user error",__func__);
 		}
 		break;
 	case CFG_SET_AF_MODE:
@@ -2492,7 +2492,7 @@ int sp3d_spi_config(void __user *argp)
 		rc = sp3d_set_flashlight(cdata.mode, &cdata.cfg.flash_data);
 		if(copy_to_user((void *)argp,
 			&cdata,sizeof(struct sensor_cfg_data))){
-			pr_err("[CAM]%s copy to user error",__func__);
+			pr_err("[CAM] %s copy to user error",__func__);
 		}
 		break;
 	case CFG_SET_FLASHLIGHT_EXP_DIV:
@@ -2505,14 +2505,14 @@ int sp3d_spi_config(void __user *argp)
 		rc = sp3d_get_iso(&cdata.cfg.real_iso_value);
 		if(copy_to_user((void *)argp,
 			&cdata,sizeof(struct sensor_cfg_data))){
-			pr_err("[CAM]%s copy to user error",__func__);
+			pr_err("[CAM] %s copy to user error",__func__);
 		}
         break;
 	case CFG_GET_EXP_GAIN:
 		rc = sp3d_get_exp_gain(&cdata.cfg.exp_info);
 		if(copy_to_user((void *)argp,
 			&cdata,sizeof(struct sensor_cfg_data))){
-			pr_err("[CAM]%s copy to user error",__func__);
+			pr_err("[CAM] %s copy to user error",__func__);
 		}
 		break;
 	case CFG_SET_FRAMERATE:
@@ -2538,7 +2538,7 @@ static int sp3d_spi_release(void)
 		kfree(sp3d_ctrl);
 		sp3d_ctrl =NULL;
 	}
-	pr_info("[CAM]sp3d_release completed\n");
+	pr_info("[CAM] sp3d_release completed\n");
 	atomic_set(&preview_flag,false);
 	atomic_set(&snapshot_flag,false);
 	mutex_unlock(&sp3d_mut);
@@ -2548,7 +2548,7 @@ static int sp3d_spi_release(void)
 static int sp3d_spi_probe(struct spi_device *spi)
 {
 	/* int rc = 0; */
-	pr_info("[CAM]sp3d_spi_probe called!\n");
+	pr_info("[CAM] sp3d_spi_probe called!\n");
 
 	sp3d_spi_ctrl =
 		kzalloc(sizeof(*sp3d_spi_ctrl), GFP_KERNEL);
@@ -2560,8 +2560,8 @@ static int sp3d_spi_probe(struct spi_device *spi)
 
 	spi_set_drvdata(spi, sp3d_spi_ctrl);
 
-	pr_info("[CAM]SP3D SPI register successed! \n");
-	pr_info("[CAM]master bus_num = %d\n", spi->master->bus_num);
+	pr_info("[CAM] SP3D SPI register successed! \n");
+	pr_info("[CAM] master bus_num = %d\n", spi->master->bus_num);
 	return 0;
 
 #if 0
@@ -2611,13 +2611,13 @@ static ssize_t cam3Dmode_set(struct device *dev,
 
 #if 0
 	if (strcmp(current->comm,"com.android.camera")!=0){
-		pr_info("[CAM]No permission : not camera ap\n");
+		pr_info("[CAM] No permission : not camera ap\n");
 		return -EINVAL;
 	}
 #endif
 
 	cam3Dmode_value = tmp;
-	pr_info("[CAM]cam3Dmode_value = %d\n", cam3Dmode_value);
+	pr_info("[CAM] cam3Dmode_value = %d\n", cam3Dmode_value);
 	return count;
 }
 
@@ -2639,31 +2639,31 @@ static struct kobject *android_sp3d;
 static int sp3d_sysfs_init(void)
 {
 	int ret = 0;
-	pr_info("[CAM]sp3d:kobject creat and add\n");
+	pr_info("[CAM] sp3d:kobject creat and add\n");
 	android_sp3d = kobject_create_and_add("android_camera", NULL);
 	if (android_sp3d == NULL) {
-		pr_info("[CAM]sp3d_sysfs_init: subsystem_register " \
+		pr_info("[CAM] sp3d_sysfs_init: subsystem_register " \
 		"failed\n");
 		ret = -ENOMEM;
 		return ret ;
 	}
-	pr_info("[CAM]sp3d:sysfs_create_file\n");
+	pr_info("[CAM] sp3d:sysfs_create_file\n");
 	ret = sysfs_create_file(android_sp3d, &dev_attr_sensor.attr);
 	if (ret) {
-		pr_info("[CAM]sp3d_sysfs_init: sysfs_create_file " \
+		pr_info("[CAM] sp3d_sysfs_init: sysfs_create_file " \
 		"failed\n");
 		kobject_del(android_sp3d);
 	}
 
 	ret = sysfs_create_file(android_sp3d, &dev_attr_cam3Dmode.attr);
 	if (ret) {
-		pr_info("[CAM]sp3d_sysfs_init: sysfs_create_file cam3Dmode failed\n");
+		pr_info("[CAM] sp3d_sysfs_init: sysfs_create_file cam3Dmode failed\n");
 		kobject_del(android_sp3d);
 	}
 
 	ret = sysfs_create_file(android_sp3d, &dev_attr_stereo_low_cap_limit.attr);
 	if (ret) {
-		pr_info("[CAM]sp3d_sysfs_init: sysfs_create_file stereo_low_cap_limit failed\n");
+		pr_info("[CAM] sp3d_sysfs_init: sysfs_create_file stereo_low_cap_limit failed\n");
 		kobject_del(android_sp3d);
 	}
 
@@ -2675,7 +2675,7 @@ static int sp3d_sensor_probe(struct msm_camera_sensor_info *info,
 		struct msm_sensor_ctrl *s)
 {
 	int rc = 0;
-	pr_info("[CAM]sp3d_sensor_probe\n");
+	pr_info("[CAM] sp3d_sensor_probe\n");
 
 	rc = spi_register_driver(&sp3d_spi_driver);
 	if (rc < 0)
@@ -2706,7 +2706,7 @@ static int sp3d_sensor_probe(struct msm_camera_sensor_info *info,
 
 probe_fail:
 	sp3d_probe_init_done(info);
-	pr_err("[CAM]sp3d_sensor_probe: SENSOR PROBE FAILS!\n");
+	pr_err("[CAM] sp3d_sensor_probe: SENSOR PROBE FAILS!\n");
 	return rc;
 }
 
@@ -2716,12 +2716,12 @@ static int __sp3d_probe(struct platform_device *pdev)
 	int rc = 0;
 	struct msm_camera_sensor_info *sdata = pdev->dev.platform_data;
 	sp3d_pdev = pdev;
-	pr_info("[CAM]sp3d_probe");
+	pr_info("[CAM] sp3d_probe");
 	/*turn on power*/
 	rc = sp3d_vreg_enable(sdata);
 	sdata->pdata->camera_gpio_on();
 	/* switch PCLK and MCLK to Main cam */
-	pr_info("[CAM]sp3d: sp3d_sensor_probe: switch clk\n");
+	pr_info("[CAM] sp3d: sp3d_sensor_probe: switch clk\n");
 	if(sdata->camera_clk_switch != NULL)
 		sdata->camera_clk_switch();
 	mdelay(5);
@@ -2739,7 +2739,7 @@ static struct platform_driver msm_camera_driver = {
 
 static int __init sp3d_init(void)
 {
-	pr_info("[CAM]sp3d_init\n");
+	pr_info("[CAM] sp3d_init\n");
 	return platform_driver_register(&msm_camera_driver);
 }
 

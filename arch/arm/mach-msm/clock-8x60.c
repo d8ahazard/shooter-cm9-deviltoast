@@ -541,7 +541,9 @@ static struct clk_ops clk_ops_rcg_8x60 = {
 	.auto_off = rcg_clk_disable,
 	.handoff = rcg_clk_handoff,
 	.set_rate = rcg_clk_set_rate,
-    .set_min_rate = rcg_clk_set_min_rate,
+#ifdef CONFIG_HTC_DEVICE
+	.set_min_rate = rcg_clk_set_min_rate,
+#endif
 	.get_rate = rcg_clk_get_rate,
 	.list_rate = rcg_clk_list_rate,
 	.is_enabled = rcg_clk_is_enabled,

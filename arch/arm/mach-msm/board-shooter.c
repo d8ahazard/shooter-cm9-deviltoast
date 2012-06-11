@@ -1471,7 +1471,7 @@ static struct rpm_regulator_init_data rpm_regulator_init_data[] = {
 	RPM_LDO(PM8901_L3,  0, 1, 0, 3300000, 3300000, LDO300HMIN),
 	RPM_LDO(PM8901_L4,  0, 1, 0, 2850000, 2850000, LDO300HMIN),
 	RPM_LDO(PM8901_L5,  0, 1, 0, 2850000, 2850000, LDO300HMIN),
-	RPM_LDO(PM8901_L6,  0, 0, 0, 2200000, 2200000, LDO300HMIN),
+	RPM_LDO(PM8901_L6,  0, 1, 0, 2850000, 2850000, LDO300HMIN),
 
 	/*	 ID       a_on pd ss min_uV   max_uV   init_ip   freq */
 	RPM_SMPS(PM8901_S2, 0, 1, 0, 1200000, 1200000, FTS_HMIN, 1p60),
@@ -2867,7 +2867,7 @@ static struct i2c_registry msm8x60_i2c_devices[] __initdata = {
 	},
 
 #ifdef CONFIG_S5K6AAFX
-    {
+	{
 		MSM_GSBI4_QUP_I2C_BUS_ID,
 		msm_s5k6aafx_camera_boardinfo,
 		ARRAY_SIZE(msm_s5k6aafx_camera_boardinfo),
@@ -2983,7 +2983,7 @@ static struct platform_device *devices[] __initdata = {
 	&msm_camera_sensor_sp3d,
 #endif
 #ifdef CONFIG_S5K6AAFX
-    &msm_camera_sensor_s5k6aafx,
+	&msm_camera_sensor_s5k6aafx,
 #endif
 #ifdef CONFIG_MSM_GEMINI
 	&msm_gemini_device,
@@ -4367,10 +4367,10 @@ static void __init msm8x60_init(void)
 	pm8058_platform_data.vibrator_pdata = &pm8058_vib_pdata;
 
 #ifdef CONFIG_SP3D
-    sp3d_init_camera();
+	sp3d_init_camera();
 #endif
 #ifdef CONFIG_S5K6AAFX
-    s5k6aafx_init_camera();
+	s5k6aafx_init_camera();
 #endif
 
 	platform_add_devices(msm_footswitch_devices,
@@ -4386,7 +4386,7 @@ static void __init msm8x60_init(void)
 
 	register_i2c_devices();
 
-    shooter_init_panel();
+	shooter_init_panel();
 	msm_pm_set_platform_data(msm_pm_data, ARRAY_SIZE(msm_pm_data));
 	msm_pm_set_rpm_wakeup_irq(RPM_SCSS_CPU0_WAKE_UP_IRQ);
 	msm_cpuidle_set_states(msm_cstates, ARRAY_SIZE(msm_cstates),

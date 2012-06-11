@@ -71,7 +71,7 @@ static int i2c_transfer_retry(struct i2c_adapter *adap,
 		ns = i2c_transfer(adap, msgs, len);
 		if (ns == len)
 			break;
-		pr_err("[CAM]%s: try %d/%d: i2c_transfer sent: %d, len %d\n",
+		pr_err("[CAM] %s: try %d/%d: i2c_transfer sent: %d, len %d\n",
 			__func__,
 			i2c_retry, MAX_I2C_RETRIES, ns, len);
 		msleep(10);
@@ -94,7 +94,7 @@ static int s5k6aafx_i2c_txdata(unsigned short saddr,
 	};
 
 	if (i2c_transfer_retry(s5k6aafx_client->adapter, msg, 1) < 0) {
-		pr_info("[CAM]s5k6aafx_i2c_txdata failed\n");
+		pr_info("[CAM] s5k6aafx_i2c_txdata failed\n");
 		return -EIO;
 	}
 
@@ -114,7 +114,7 @@ static int s5k6aafx_i2c_write(unsigned short saddr,
 	buf[3] = (wdata & 0x00FF);
 	rc = s5k6aafx_i2c_txdata(saddr, buf, 4);
 	if (rc < 0)
-		pr_info("[CAM]i2c_write failed, addr = 0x%x, val = 0x%x!\n",
+		pr_info("[CAM] i2c_write failed, addr = 0x%x, val = 0x%x!\n",
 		     waddr, wdata);
 
 	return rc;
@@ -155,7 +155,7 @@ static int s5k6aafx_i2c_rxdata(unsigned short saddr,
 	};
 
 	if (i2c_transfer_retry(s5k6aafx_client->adapter, msgs, 2) < 0) {
-		pr_info("[CAM]s5k6aafx_i2c_rxdata failed!\n");
+		pr_info("[CAM] s5k6aafx_i2c_rxdata failed!\n");
 		return -EIO;
 	}
 
@@ -194,7 +194,7 @@ static int s5k6aafx_gpio_pull(int gpio_pin, int pull_mode)
 	if (!rc)
 		gpio_direction_output(gpio_pin, pull_mode);
 	else
-		pr_err("[CAM]GPIO(%d) request failed\n", gpio_pin);
+		pr_err("[CAM] GPIO(%d) request failed\n", gpio_pin);
 	gpio_free(gpio_pin);
 	return rc;
 }
@@ -531,7 +531,7 @@ static int s5k6aafx_set_sensor_mode(int mode, enum qtr_size_mode qtr_size_mode_v
 	}
 	switch (mode) {
 	case SENSOR_PREVIEW_MODE:
-		pr_info("[CAM]s5k6aafx:sensor set mode: preview\n");
+		pr_info("[CAM] s5k6aafx:sensor set mode: preview\n");
 		op_mode = SENSOR_PREVIEW_MODE;
 
 		s5k6aafx_i2c_write(s5k6aafx_client->addr,
@@ -553,7 +553,7 @@ static int s5k6aafx_set_sensor_mode(int mode, enum qtr_size_mode qtr_size_mode_v
 		break;
 
 	case SENSOR_SNAPSHOT_MODE:
-		pr_info("[CAM]s5k6aafx:sensor set mode: snapshot\n");
+		pr_info("[CAM] s5k6aafx:sensor set mode: snapshot\n");
 		op_mode = SENSOR_SNAPSHOT_MODE;
 
 		s5k6aafx_i2c_write(s5k6aafx_client->addr,
@@ -580,7 +580,7 @@ static int s5k6aafx_set_sensor_mode(int mode, enum qtr_size_mode qtr_size_mode_v
 
 static int s5k6aafx_set_FPS(struct fps_cfg *fps)
 {
-	pr_info("[CAM]s5k6aafx_set_FPS,fps->fps_div=%d", fps->fps_div);
+	pr_info("[CAM] s5k6aafx_set_FPS,fps->fps_div=%d", fps->fps_div);
 
 	if (op_mode == SENSOR_SNAPSHOT_MODE)
 		return 0;
@@ -906,7 +906,7 @@ static int s5k6aafx_sensor_read_id(const struct msm_camera_sensor_info *data)
 	uint16_t model_id;
 	int rc = 0;
 
-	pr_info("[CAM]s5k6aafx_sensor_read_id\n");
+	pr_info("[CAM] s5k6aafx_sensor_read_id\n");
 	/* Read the Model ID of the sensor */
 	rc = s5k6aafx_i2c_write(s5k6aafx_client->addr,
 	       S5K6AAFX_REG_I2C_MODE, S5K6AAFX_I2C_MODE_GENERAL);
@@ -925,10 +925,10 @@ static int s5k6aafx_sensor_read_id(const struct msm_camera_sensor_info *data)
 	if (rc < 0)
 		goto init_probe_fail;
 
-	pr_info("[CAM]s5k6aafx: model_id = 0x%x\n", model_id);
+	pr_info("[CAM] s5k6aafx: model_id = 0x%x\n", model_id);
 	/* Check if it matches it with the value in Datasheet */
 	if (model_id != S5K6AAFX_MODEL_ID) {
-		pr_info("[CAM]invalid model id\n");
+		pr_info("[CAM] invalid model id\n");
 		rc = -EINVAL;
 		goto init_probe_fail;
 	}
@@ -942,10 +942,10 @@ static int s5k6aafx_vreg_enable(struct platform_device *pdev)
 {
 	struct msm_camera_sensor_info *sdata = pdev->dev.platform_data;
 	int rc;
-	pr_info("[CAM]%s camera vreg on\n", __func__);
+	pr_info("[CAM] %s camera vreg on\n", __func__);
 
 	if (sdata->camera_power_on == NULL) {
-		pr_err("[CAM]sensor platform_data didnt register\n");
+		pr_err("[CAM] sensor platform_data didnt register\n");
 		return -EIO;
 	}
 	rc = sdata->camera_power_on();
@@ -958,7 +958,7 @@ static int s5k6aafx_vreg_disable(struct platform_device *pdev)
 	int rc;
 	pr_info("[CAM] %s camera vreg off\n", __func__);
 	if (sdata->camera_power_off == NULL) {
-		pr_err("[CAM]sensor platform_data didnt register\n");
+		pr_err("[CAM] sensor platform_data didnt register\n");
 		return -EIO;
 	}
 	rc = sdata->camera_power_off();
@@ -972,7 +972,7 @@ int s5k6aafx_sensor_open_init(struct msm_camera_sensor_info *data)
 
 	s5k6aafx_ctrl = kzalloc(sizeof(struct s5k6aafx_ctrl), GFP_KERNEL);
 	if (!s5k6aafx_ctrl) {
-		pr_info("[CAM]s5k6aafx_init failed!\n");
+		pr_info("[CAM] s5k6aafx_init failed!\n");
 		rc = -ENOMEM;
 		goto init_done;
 	}
@@ -981,7 +981,7 @@ int s5k6aafx_sensor_open_init(struct msm_camera_sensor_info *data)
 		(unsigned int)s5k6aafx_regs.reset_init);
 
 	if (data == NULL) {
-		pr_err("[CAM]%s sensor data is NULL\n", __func__);
+		pr_err("[CAM] %s sensor data is NULL\n", __func__);
 		return -EINVAL;
 	}
 	s5k6aafx_ctrl->sensordata = data;
@@ -992,7 +992,7 @@ int s5k6aafx_sensor_open_init(struct msm_camera_sensor_info *data)
 
 
 	/*switch PCLK and MCLK to 2nd cam*/
-	pr_info("[CAM]s5k6aafx: s5k6aafx_sensor_probe switch clk\n");
+	pr_info("[CAM] s5k6aafx: s5k6aafx_sensor_probe switch clk\n");
 	if (data->camera_clk_switch != NULL)
 		data->camera_clk_switch();
 
@@ -1012,7 +1012,7 @@ int s5k6aafx_sensor_open_init(struct msm_camera_sensor_info *data)
 
 
 	/*MCLK enable*/
-	pr_info("[CAM]s5k6aafx: MCLK enable clk\n");
+	pr_info("[CAM] s5k6aafx: MCLK enable clk\n");
 	msm_camio_probe_on(s5k6aafx_pdev);
 	mdelay(1);
 
@@ -1058,7 +1058,7 @@ int s5k6aafx_sensor_open_init(struct msm_camera_sensor_info *data)
 		/*mdelay(134);*/
 
 		/*init setting*/
-		pr_info("[CAM]%s: pre_snap_conf_init\n", __func__);
+		pr_info("[CAM] %s: pre_snap_conf_init\n", __func__);
 		rc = s5k6aafx_i2c_write_table(&s5k6aafx_regs.prev_snap_conf_init[0],
 			s5k6aafx_regs.prev_snap_conf_init_size);
 
@@ -1109,7 +1109,7 @@ int s5k6aafx_sensor_open_init(struct msm_camera_sensor_info *data)
 			rc = s5k6aafx_i2c_write_table(&s5k6aafx_regs.clk_init[0],
 				s5k6aafx_regs.clk_init_size);
 		} else { /* for flyer */
-			pr_info("[CAM]%s: clk_init_tb2\n", __func__);
+			pr_info("[CAM] %s: clk_init_tb2\n", __func__);
 			rc = s5k6aafx_i2c_write_table(&s5k6aafx_regs.clk_init_tb2[0],
 				s5k6aafx_regs.clk_init_tb2_size);
 		}
@@ -1120,11 +1120,11 @@ int s5k6aafx_sensor_open_init(struct msm_camera_sensor_info *data)
 
 		/* preview configuration */
 		if (!data->full_size_preview) {
-			pr_info("[CAM]%s: pre_snap_conf_init\n", __func__);
+			pr_info("[CAM] %s: pre_snap_conf_init\n", __func__);
 			rc = s5k6aafx_i2c_write_table(&s5k6aafx_regs.prev_snap_conf_init[0],
 				s5k6aafx_regs.prev_snap_conf_init_size);
 		} else {
-			pr_info("[CAM]%s: pre_snap_conf_init_tb2\n", __func__);
+			pr_info("[CAM] %s: pre_snap_conf_init_tb2\n", __func__);
 			rc = s5k6aafx_i2c_write_table(&s5k6aafx_regs.prev_snap_conf_init_tb2[0],
 				s5k6aafx_regs.prev_snap_conf_init_tb2_size);
 		}
@@ -1307,14 +1307,14 @@ static ssize_t htcwc_set(struct device *dev,
 
 #if 0
 	if (strcmp(current->comm, "com.android.camera") != 0) {
-		pr_info("[CAM]No permission : not camera ap\n");
+		pr_info("[CAM] No permission : not camera ap\n");
 		return -EINVAL;
 	}
 #endif
 
 	htcwc_value = tmp;
-	/* pr_info("[CAM]current_comm = %s\n", current->comm); */
-	pr_info("[CAM]htcwc_value = %d\n", htcwc_value);
+	/* pr_info("[CAM] current_comm = %s\n", current->comm); */
+	pr_info("[CAM] htcwc_value = %d\n", htcwc_value);
 	return count;
 }
 
@@ -1335,31 +1335,31 @@ static struct kobject *android_s5k6aafx;
 static int s5k6aafx_sysfs_init(void)
 {
 	int ret ;
-	pr_info("[CAM]s5k6aafx:kobject creat and add\n");
+	pr_info("[CAM] s5k6aafx:kobject creat and add\n");
 	android_s5k6aafx = kobject_create_and_add("android_camera2", NULL);
 	if (android_s5k6aafx == NULL) {
-		pr_info("[CAM]s5k6aafx_sysfs_init: subsystem_register " \
+		pr_info("[CAM] s5k6aafx_sysfs_init: subsystem_register " \
 		"failed\n");
 		ret = -ENOMEM;
 		return ret ;
 	}
-	pr_info("[CAM]s5k6aafx:sysfs_create_file\n");
+	pr_info("[CAM] s5k6aafx:sysfs_create_file\n");
 	ret = sysfs_create_file(android_s5k6aafx, &dev_attr_sensor.attr);
 	if (ret) {
-		pr_info("[CAM]s5k6aafx_sysfs_init: sysfs_create_file " \
+		pr_info("[CAM] s5k6aafx_sysfs_init: sysfs_create_file " \
 		"failed\n");
 		kobject_del(android_s5k6aafx);
 	}
 
 	ret = sysfs_create_file(android_s5k6aafx, &dev_attr_htcwc.attr);
 	if (ret) {
-		pr_info("[CAM]s5k6aafx_sysfs_init: sysfs_create_file htcwc failed\n");
+		pr_info("[CAM] s5k6aafx_sysfs_init: sysfs_create_file htcwc failed\n");
 		kobject_del(android_s5k6aafx);
 	}
 
        ret = sysfs_create_file(android_s5k6aafx, &dev_attr_node.attr);
 	if (ret) {
-		pr_info("[CAM]s5k6aafx_sysfs_init: dev_attr_node failed\n");
+		pr_info("[CAM] s5k6aafx_sysfs_init: dev_attr_node failed\n");
 		kobject_del(android_s5k6aafx);
 	}
 
@@ -1375,7 +1375,7 @@ static int s5k6aafx_i2c_probe(struct i2c_client *client,
 
 	if (s5k6aafx_client || s5k6aafx_sensorw) {
 		if (s5k6aafx_client)
-			pr_info("[CAM]s5k6aafx_i2c_probe s5k6aafx_client existed 0x%X\n",
+			pr_info("[CAM] s5k6aafx_i2c_probe s5k6aafx_client existed 0x%X\n",
 				s5k6aafx_client->addr);
 		return 0;
 	}
@@ -1395,7 +1395,7 @@ static int s5k6aafx_i2c_probe(struct i2c_client *client,
 	i2c_set_clientdata(client, s5k6aafx_sensorw);
 	s5k6aafx_init_client(client);
 	s5k6aafx_client = client;
-	pr_info("[CAM]s5k6aafx_i2c_probe s5k6aafx_client->addr %d\n",
+	pr_info("[CAM] s5k6aafx_i2c_probe s5k6aafx_client->addr %d\n",
 		s5k6aafx_client->addr);
 
 	rc = s5k6aafx_sensor_read_id(info);
@@ -1404,7 +1404,7 @@ static int s5k6aafx_i2c_probe(struct i2c_client *client,
 
 	s5k6aafx_client = client;
 
-	pr_info("[CAM]s5k6aafx_i2c_probe succeeded! s5k6aafx_client->addr 0x%X\n",
+	pr_info("[CAM] s5k6aafx_i2c_probe succeeded! s5k6aafx_client->addr 0x%X\n",
 		s5k6aafx_client->addr);
 
 	return 0;
@@ -1413,7 +1413,7 @@ probe_failure:
 	kfree(s5k6aafx_sensorw);
 	s5k6aafx_sensorw = NULL;
 	s5k6aafx_client = NULL;
-	pr_err("[CAM]s5k6aafx_i2c_probe failed!\n");
+	pr_err("[CAM] s5k6aafx_i2c_probe failed!\n");
 	return rc;
 }
 
@@ -1435,7 +1435,7 @@ static int s5k6aafx_sensor_probe(struct msm_camera_sensor_info *info,
 				struct msm_sensor_ctrl *s)
 {
 	int rc = 0;
-	pr_info("[CAM]s5k6aafx s->node %d\n", s->node);
+	pr_info("[CAM] s5k6aafx s->node %d\n", s->node);
 	sensor_probe_node = s->node;
 
 	if (info->camera_pm8058_power != NULL) {
@@ -1449,12 +1449,12 @@ static int s5k6aafx_sensor_probe(struct msm_camera_sensor_info *info,
 
 
 	/*switch clk source*/
-	pr_info("[CAM]s5k6aafx: s5k6aafx_sensor_probe switch clk\n");
+	pr_info("[CAM] s5k6aafx: s5k6aafx_sensor_probe switch clk\n");
 	if (info->camera_clk_switch != NULL)
 		info->camera_clk_switch();
 
 	/*MCLK enable*/
-	pr_info("[CAM]s5k6aafx: MCLK enable clk\n");
+	pr_info("[CAM] s5k6aafx: MCLK enable clk\n");
 	mdelay(1);
 
 	if (s5k6aafx_gpio_pull(info->sensor_reset, 1) < 0)
@@ -1512,14 +1512,14 @@ static int s5k6aafx_sensor_probe(struct msm_camera_sensor_info *info,
 /*
 probe_done:
 */
-	pr_info("[CAM]%s %s:%d\n", __FILE__, __func__, __LINE__);
+	pr_info("[CAM] %s %s:%d\n", __FILE__, __func__, __LINE__);
 	return rc;
 probe_fail:
 	info->pdata->camera_gpio_off();
 	mdelay(10);
 	if (!info->power_down_disable)
 		s5k6aafx_vreg_disable(s5k6aafx_pdev);
-	pr_err("[CAM]S5K6AAFX probe failed\n");
+	pr_err("[CAM] S5K6AAFX probe failed\n");
 	return rc;
 
 }
@@ -1531,27 +1531,26 @@ static int __s5k6aafx_probe(struct platform_device *pdev)
 
 	s5k6aafx_pdev = pdev;
 	if (!sdata->power_down_disable) {
-	rc = s5k6aafx_vreg_enable(pdev);
+		rc = s5k6aafx_vreg_enable(pdev);
+
+		/*switch clk source*/
+		pr_info("[CAM] s5k6aafx: __s5k6aafx_probe switch clk\n");
+		if (sdata->camera_clk_switch != NULL)
+			sdata->camera_clk_switch();
 
 
-	/*switch clk source*/
-	pr_info("[CAM]s5k6aafx: __s5k6aafx_probe switch clk\n");
-	if (sdata->camera_clk_switch != NULL)
-		sdata->camera_clk_switch();
+		if (sdata->camera_pm8058_power != NULL) {
+			if (sdata->camera_pm8058_power(1) < 0)
+				pr_info("[CAM] s5k6aafx: __s5k6aafx_probe sensor pwd failed\n");
+		} else {
+			if (s5k6aafx_gpio_pull(sdata->sensor_pwd, 1) < 0)
+				pr_info("[CAM] s5k6aafx: __s5k6aafx_probe sensor pwd failed\n");
+		}
+		mdelay(1);
 
-
-	if (sdata->camera_pm8058_power != NULL) {
-		if (sdata->camera_pm8058_power(1) < 0)
-			pr_info("[CAM]s5k6aafx: __s5k6aafx_probe sensor pwd failed\n");
-	} else {
-		if (s5k6aafx_gpio_pull(sdata->sensor_pwd, 1) < 0)
-			pr_info("[CAM]s5k6aafx: __s5k6aafx_probe sensor pwd failed\n");
-	}
-	mdelay(1);
-
-	sdata->pdata->camera_gpio_on();
-	if (rc < 0)
-		pr_err("[CAM]__s5k6aafx_probe fail sensor power on error\n");
+		sdata->pdata->camera_gpio_on();
+		if (rc < 0)
+			pr_err("[CAM] __s5k6aafx_probe fail sensor power on error\n");
 	}
 
 	return msm_camera_drv_start(pdev, s5k6aafx_sensor_probe);

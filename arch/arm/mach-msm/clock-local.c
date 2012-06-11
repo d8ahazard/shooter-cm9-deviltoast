@@ -539,14 +539,16 @@ int rcg_clk_set_rate(struct clk *c, unsigned long rate)
 	return _rcg_clk_set_rate(clk, nf);
 }
 
+#ifdef CONFIG_HTC_DEVICE
 int rcg_clk_set_min_rate(struct clk *clk, unsigned long rate)
 {
-    if (rcg_clk_get_rate(clk) < rate)
-    {
-        return rcg_clk_set_rate(clk, rate);
-    }
-    return 0;
+	if (rcg_clk_get_rate(clk) < rate)
+	{
+		return rcg_clk_set_rate(clk, rate);
+	}
+	return 0;
 }
+#endif
 
 /* Get the currently-set rate of a clock in Hz. */
 unsigned long rcg_clk_get_rate(struct clk *c)
