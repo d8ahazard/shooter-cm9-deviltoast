@@ -160,6 +160,8 @@ struct msm_hs_port {
 	enum msm_hs_clk_req_off_state_e clk_req_off_state;
 
 	struct msm_hs_wakeup wakeup;
+	/* optional callback to exit low power mode */
+	void (*exit_lpm_cb)(struct uart_port *);
 	struct wake_lock dma_wake_lock;  /* held while any DMA active */
 };
 
@@ -1102,6 +1104,9 @@ static void msm_hs_start_tx_locked(struct uart_port *uport )
 
 	clk_enable(msm_uport->clk);
 
+	if (msm_uport->exit_lpm_cb)
+		msm_uport->exit_lpm_cb(uport);
+
 	if (msm_uport->tx.tx_ready_int_en == 0) {
 		msm_uport->tx.tx_ready_int_en = 1;
 		if (msm_uport->tx.dma_in_flight == 0)
@@ -1316,7 +1321,7 @@ static void msm_hs_handle_delta_cts_locked(struct uart_port *uport)
  *        -1 did not clock off, do not retry
  *         1 if we clocked off
  */
-static int msm_hs_check_clock_off_locked(struct uart_port *uport)
+int msm_hs_check_clock_off_locked(struct uart_port *uport)
 {
 	unsigned long sr_status;
 	struct msm_hs_port *msm_uport = UARTDM_TO_MSM(uport);
@@ -1484,11 +1489,9 @@ static irqreturn_t msm_hs_isr(int irq, void *dev)
 }
 
 /* request to turn off uart clock once pending TX is flushed */
-void msm_hs_request_clock_off(struct uart_port *uport) {
-	unsigned long flags;
+void msm_hs_request_clock_off_locked(struct uart_port *uport) {
 	struct msm_hs_port *msm_uport = UARTDM_TO_MSM(uport);
 
-	spin_lock_irqsave(&uport->lock, flags);
 	if (msm_uport->clk_state == MSM_HS_CLK_ON) {
 		msm_uport->clk_state = MSM_HS_CLK_REQUEST_OFF;
 		msm_uport->clk_req_off_state = CLK_REQ_OFF_START;
@@ -1500,11 +1503,19 @@ void msm_hs_request_clock_off(struct uart_port *uport) {
 		 */
 		mb();
 	}
+}
+EXPORT_SYMBOL(msm_hs_request_clock_off_locked);
+
+void msm_hs_request_clock_off(struct uart_port *uport) {
+    unsigned long flags;
+
+    spin_lock_irqsave(&uport->lock, flags);
+    msm_hs_request_clock_off_locked(uport);
 	spin_unlock_irqrestore(&uport->lock, flags);
 }
 EXPORT_SYMBOL(msm_hs_request_clock_off);
 
-static void msm_hs_request_clock_on_locked(struct uart_port *uport) {
+void msm_hs_request_clock_on_locked(struct uart_port *uport) {
 	struct msm_hs_port *msm_uport = UARTDM_TO_MSM(uport);
 	unsigned int data;
 	int ret = 0;
@@ -1883,6 +1894,11 @@ static int __init msm_hs_probe(struct platform_device *pdev)
 				dev_err(uport->dev, "Cannot configure"
 					"gpios\n");
 	}
+
+	if (pdata == NULL)
+		msm_uport->exit_lpm_cb = NULL;
+	else
+		msm_uport->exit_lpm_cb = pdata->exit_lpm_cb;
 
 	resource = platform_get_resource_byname(pdev, IORESOURCE_DMA,
 						"uartdm_channels");
