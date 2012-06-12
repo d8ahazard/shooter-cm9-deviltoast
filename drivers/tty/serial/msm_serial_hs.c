@@ -1369,6 +1369,7 @@ int msm_hs_check_clock_off_locked(struct uart_port *uport)
 	if (msm_uport->pclk)
 		clk_disable(msm_uport->pclk);
 	msm_uport->clk_state = MSM_HS_CLK_OFF;
+
 	if (use_low_power_wakeup(msm_uport)) {
 		msm_uport->wakeup.ignore = 1;
 		enable_irq(msm_uport->wakeup.irq);
@@ -1565,7 +1566,7 @@ void msm_hs_request_clock_on(struct uart_port *uport) {
 }
 EXPORT_SYMBOL(msm_hs_request_clock_on);
 
-static irqreturn_t msm_hs_wakeup_isr(int irq, void *dev)
+irqreturn_t msm_hs_wakeup_isr(int irq, void *dev)
 {
 	unsigned int wakeup = 0;
 	unsigned long flags;
@@ -1701,6 +1702,7 @@ static int msm_hs_startup(struct uart_port *uport)
 			  "msm_hs_uart", msm_uport);
 	if (unlikely(ret))
 		return ret;
+
 	if (use_low_power_wakeup(msm_uport)) {
 		ret = request_irq(msm_uport->wakeup.irq, msm_hs_wakeup_isr,
 				  IRQF_TRIGGER_FALLING,
@@ -1867,32 +1869,39 @@ static int __init msm_hs_probe(struct platform_device *pdev)
 
 	resource = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 	if (unlikely(!resource))
+    {
+        printk(KERN_ERR "%s: platform_get_resource(IORESOURCE_MEM) failed\n", __func__);
 		return -ENXIO;
+    }
 	uport->mapbase = resource->start;  /* virtual address */
 
 	uport->membase = ioremap(uport->mapbase, PAGE_SIZE);
 	if (unlikely(!uport->membase))
+    {
+        printk(KERN_ERR "%s: ioremap failed\n", __func__);
 		return -ENOMEM;
+    }
 
 	uport->irq = platform_get_irq(pdev, 0);
 	if (unlikely((int)uport->irq < 0))
+    {
+        printk(KERN_ERR "%s: platform_get_irq failed\n", __func__);
 		return -ENXIO;
+    }
 
 	if (pdata == NULL)
+    {
 		msm_uport->wakeup.irq = -1;
-	else {
+    } else {
 		msm_uport->wakeup.irq = pdata->wakeup_irq;
 		msm_uport->wakeup.ignore = 1;
 		msm_uport->wakeup.inject_rx = pdata->inject_rx_on_wakeup;
 		msm_uport->wakeup.rx_to_inject = pdata->rx_to_inject;
 
-		if (unlikely(msm_uport->wakeup.irq < 0))
-			return -ENXIO;
-
-		if (pdata->gpio_config)
-			if (unlikely(pdata->gpio_config(1)))
-				dev_err(uport->dev, "Cannot configure"
-					"gpios\n");
+        if (pdata->gpio_config)
+            if (unlikely(pdata->gpio_config(1)))
+                dev_err(uport->dev, "Cannot configure"
+                    "gpios\n");
 	}
 
 	if (pdata == NULL)
@@ -1979,7 +1988,7 @@ static int __init msm_serial_hs_init(void)
 
 	ret = uart_register_driver(&msm_hs_driver);
 	if (unlikely(ret)) {
-		printk(KERN_ERR "%s failed to load\n", __FUNCTION__);
+		printk(KERN_ERR "%s failed to load (uart_register_driver failed)\n", __FUNCTION__);
 		return ret;
 	}
 	debug_base = debugfs_create_dir("msm_serial_hs", NULL);
@@ -1989,7 +1998,7 @@ static int __init msm_serial_hs_init(void)
 	ret = platform_driver_probe(&msm_serial_hs_platform_driver,
 					msm_hs_probe);
 	if (ret) {
-		printk(KERN_ERR "%s failed to load\n", __FUNCTION__);
+		printk(KERN_ERR "%s failed to load (platform_driver_probe failed)\n", __FUNCTION__);
 		debugfs_remove_recursive(debug_base);
 		uart_unregister_driver(&msm_hs_driver);
 		return ret;
@@ -2075,19 +2084,23 @@ static int msm_hs_runtime_idle(struct device *dev)
 
 static int msm_hs_runtime_resume(struct device *dev)
 {
+#if 0   // Don't use local power management with bcm_bt_lpm
 	struct platform_device *pdev = container_of(dev, struct
 						    platform_device, dev);
 	struct msm_hs_port *msm_uport = &q_uart_port[pdev->id];
 	msm_hs_request_clock_on(&msm_uport->uport);
+#endif
 	return 0;
 }
 
 static int msm_hs_runtime_suspend(struct device *dev)
 {
+#if 0   // Don't use local power management with bcm_bt_lpm
 	struct platform_device *pdev = container_of(dev, struct
 						    platform_device, dev);
 	struct msm_hs_port *msm_uport = &q_uart_port[pdev->id];
 	msm_hs_request_clock_off(&msm_uport->uport);
+#endif
 	return 0;
 }
 

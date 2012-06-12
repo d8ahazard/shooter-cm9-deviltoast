@@ -54,16 +54,20 @@ struct bcm_bt_lpm {
 
 static void set_wake_locked(int wake)
 {
-    printk(KERN_ERR "[BT] %s: E\n", __func__);
-
     if (wake == bt_lpm.wake)
 		return;
-	bt_lpm.wake = wake;
 
+	bt_lpm.wake = wake;
 	if (wake || bt_lpm.host_wake)
+    {
+        printk(KERN_ERR "[BT] Requesting clock on\n");
 		bt_lpm.request_clock_on_locked(bt_lpm.uport);
+    }
 	else
+    {
+        printk(KERN_ERR "[BT] Requesting clock off\n");
 		bt_lpm.request_clock_off_locked(bt_lpm.uport);
+    }
 
 	gpio_set_value(bt_lpm.gpio_wake, wake);
 }
@@ -100,13 +104,19 @@ static void update_host_wake_locked(int host_wake)
 
     if (host_wake == bt_lpm.host_wake)
 		return;
+
 	bt_lpm.host_wake = host_wake;
 
 	if (bt_lpm.wake || host_wake)
 		bt_lpm.request_clock_on_locked(bt_lpm.uport);
 	else
-		bt_lpm.request_clock_off_locked(bt_lpm.uport);
+    {
+        bt_lpm.request_clock_off_locked(bt_lpm.uport);
+    }
 }
+
+// We're going to need to use this to wake up the device, instead of just host_wake_locked
+irqreturn_t msm_hs_wakeup_isr(int irq, void *dev);
 
 static irqreturn_t host_wake_isr(int irq, void *dev)
 {
@@ -129,7 +139,7 @@ static irqreturn_t host_wake_isr(int irq, void *dev)
 
 	spin_unlock_irqrestore(&bt_lpm.uport->lock, flags);
 
-	return IRQ_HANDLED;
+	return (host_wake ? msm_hs_wakeup_isr(irq, bt_lpm.uport) : IRQ_HANDLED);
 }
 
 static int bcm_bt_lpm_probe(struct platform_device *pdev)
@@ -158,10 +168,10 @@ static int bcm_bt_lpm_probe(struct platform_device *pdev)
 	bt_lpm.host_wake = 0;
 
 	irq = gpio_to_irq(bt_lpm.gpio_host_wake);
-	ret = request_irq(irq, host_wake_isr, IRQF_TRIGGER_HIGH,
-			"bt host_wake", NULL);
+	ret = request_irq(irq, host_wake_isr, IRQF_TRIGGER_HIGH, "bt host_wake", NULL);
 	if (ret)
 		return ret;
+
 	ret = irq_set_irq_wake(irq, 1);
 	if (ret)
 		return ret;
