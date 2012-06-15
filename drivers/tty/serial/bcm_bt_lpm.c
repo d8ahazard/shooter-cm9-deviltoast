@@ -75,8 +75,6 @@ static void set_wake_locked(int wake)
 static enum hrtimer_restart enter_lpm(struct hrtimer *timer) {
 	unsigned long flags;
 
-    printk(KERN_ERR "[BT] %s: E\n", __func__);
-
 	spin_lock_irqsave(&bt_lpm.uport->lock, flags);
 	set_wake_locked(0);
 	spin_unlock_irqrestore(&bt_lpm.uport->lock, flags);
@@ -87,12 +85,8 @@ static enum hrtimer_restart enter_lpm(struct hrtimer *timer) {
 void bcm_bt_lpm_exit_lpm_locked(struct uart_port *uport) {
 	bt_lpm.uport = uport;
 
-    printk(KERN_ERR "[BT] %s: E\n", __func__);
-
 	hrtimer_try_to_cancel(&bt_lpm.enter_lpm_timer);
-
 	set_wake_locked(1);
-
 	hrtimer_start(&bt_lpm.enter_lpm_timer, bt_lpm.enter_lpm_delay,
 			HRTIMER_MODE_REL);
 }
