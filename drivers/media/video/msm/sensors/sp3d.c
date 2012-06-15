@@ -2595,6 +2595,15 @@ static ssize_t sensor_vendor_show(struct device *dev,
 	return ret;
 }
 
+static ssize_t sensor_version_show(struct device *dev,
+		struct device_attribute *attr, char *buf)
+{
+	ssize_t ret = 0;
+	sprintf(buf, "CM9-agrabren-44696265742162216469706566\n");
+	ret = strlen(buf) + 1;
+	return ret;
+}
+
 static ssize_t cam3Dmode_get(struct device *dev,
 		struct device_attribute *attr, char *buf)
 {
@@ -2633,6 +2642,7 @@ static ssize_t stereo_low_cap_limit_get(struct device *dev,
 static DEVICE_ATTR(sensor, 0444, sensor_vendor_show, NULL);
 static DEVICE_ATTR(cam3Dmode, 0644, cam3Dmode_get, cam3Dmode_set);
 static DEVICE_ATTR(stereo_low_cap_limit, 0444, stereo_low_cap_limit_get, NULL);
+static DEVICE_ATTR(version, 0444, sensor_version_show, NULL);
 
 static struct kobject *android_sp3d;
 
@@ -2666,6 +2676,12 @@ static int sp3d_sysfs_init(void)
 		pr_info("[CAM] sp3d_sysfs_init: sysfs_create_file stereo_low_cap_limit failed\n");
 		kobject_del(android_sp3d);
 	}
+
+    ret = sysfs_create_file(android_sp3d, &dev_attr_version.attr);
+    if (ret) {
+        pr_info("[CAM]sp3d_sysfs_init: sysfs_create_file version failed\n");
+        kobject_del(android_sp3d);
+    }
 
 	return 0 ;
 }
