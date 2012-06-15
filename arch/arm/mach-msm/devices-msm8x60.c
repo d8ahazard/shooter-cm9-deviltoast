@@ -406,6 +406,20 @@ static struct resource gsbi4_qup_i2c_resources[] = {
 		.end	= GSBI4_QUP_IRQ,
 		.flags	= IORESOURCE_IRQ,
 	},
+#ifdef CONFIG_HTC_DEVICE
+	{
+		.name	= "i2c_clk",
+		.start	= 48,
+		.end	= 48,
+		.flags	= IORESOURCE_IO,
+	},
+	{
+		.name	= "i2c_sda",
+		.start	= 47,
+		.end	= 47,
+		.flags	= IORESOURCE_IO,
+	},
+#endif
 };
 
 static struct resource gsbi5_qup_i2c_resources[] = {

@@ -381,12 +381,13 @@ static int shooter_s5k6aafx_vreg_on(void)
 	/* main / 2nd camera digital power */
 	rc = camera_sensor_power_enable_8901("8901_lvs2");
 	pr_info("[CAM] sensor_power_enable(\"8901_lvs2\", 1800) == %d\n", rc);
-	mdelay(5);
+	mdelay(10);
 
 	/*IO*/
 	rc = camera_sensor_power_enable_8901("8901_lvs3");
 	pr_info("[CAM] sensor_power_enable(\"8901_lvs3\", 1800) == %d\n", rc);
 	mdelay(1);
+
 	return rc;
 }
 
@@ -414,6 +415,7 @@ static int shooter_s5k6aafx_vreg_off(void)
 	rc = camera_sensor_power_disable("8901_l6");
 	pr_info("[CAM] sensor_power_disable(\"8901_l6\") == %d\n", rc);
 #endif
+
 	return rc;
 }
 
