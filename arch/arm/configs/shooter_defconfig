@@ -2060,7 +2060,7 @@ CONFIG_CAMERA_3D=y
 # CONFIG_WEBCAM_OV9726 is not set
 # CONFIG_VX6953 is not set
 # CONFIG_MT9E013 is not set
-# CONFIG_QS_S5K4E1 is not set
+CONFIG_QS_S5K4E1=y
 # CONFIG_S5K4E1 is not set
 # CONFIG_S5K4E5YX is not set
 # CONFIG_S5K3H1GX is not set
