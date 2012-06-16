@@ -60,12 +60,10 @@ static void set_wake_locked(int wake)
 	bt_lpm.wake = wake;
 	if (wake || bt_lpm.host_wake)
     {
-        printk(KERN_ERR "[BT] Requesting clock on\n");
 		bt_lpm.request_clock_on_locked(bt_lpm.uport);
     }
 	else
     {
-        printk(KERN_ERR "[BT] Requesting clock off\n");
 		bt_lpm.request_clock_off_locked(bt_lpm.uport);
     }
 
@@ -94,8 +92,6 @@ EXPORT_SYMBOL(bcm_bt_lpm_exit_lpm_locked);
 
 static void update_host_wake_locked(int host_wake)
 {
-    printk(KERN_ERR "[BT] %s: E\n", __func__);
-
     if (host_wake == bt_lpm.host_wake)
 		return;
 
@@ -104,20 +100,14 @@ static void update_host_wake_locked(int host_wake)
 	if (bt_lpm.wake || host_wake)
 		bt_lpm.request_clock_on_locked(bt_lpm.uport);
 	else
-    {
         bt_lpm.request_clock_off_locked(bt_lpm.uport);
-    }
 }
 
 // We're going to need to use this to wake up the device, instead of just host_wake_locked
-irqreturn_t msm_hs_wakeup_isr(int irq, void *dev);
-
 static irqreturn_t host_wake_isr(int irq, void *dev)
 {
 	int host_wake;
 	unsigned long flags;
-
-    printk(KERN_ERR "[BT] %s: E\n", __func__);
 
 	host_wake = gpio_get_value(bt_lpm.gpio_host_wake);
 	irq_set_irq_type(irq, host_wake ? IRQF_TRIGGER_LOW : IRQF_TRIGGER_HIGH);
@@ -133,7 +123,7 @@ static irqreturn_t host_wake_isr(int irq, void *dev)
 
 	spin_unlock_irqrestore(&bt_lpm.uport->lock, flags);
 
-	return (host_wake ? msm_hs_wakeup_isr(irq, bt_lpm.uport) : IRQ_HANDLED);
+	return IRQ_HANDLED;
 }
 
 static int bcm_bt_lpm_probe(struct platform_device *pdev)
@@ -141,8 +131,6 @@ static int bcm_bt_lpm_probe(struct platform_device *pdev)
 	int irq;
 	int ret;
 	struct bcm_bt_lpm_platform_data *pdata = pdev->dev.platform_data;
-
-    printk(KERN_ERR "[BT] %s: E\n", __func__);
 
 	if (bt_lpm.request_clock_off_locked != NULL) {
 		printk(KERN_ERR "Cannot register two bcm_bt_lpm drivers\n");

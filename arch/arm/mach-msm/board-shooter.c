@@ -68,6 +68,7 @@
 #include <mach/msm_iomap.h>
 #include <mach/msm_memtypes.h>
 #include <mach/msm_serial_hs.h>
+#include <mach/bcm_bt_lpm.h>
 #include <mach/msm_spi.h>
 #include <mach/msm_xo.h>
 #include <mach/restart.h>
@@ -1551,9 +1552,25 @@ static int configure_uart_gpios(int on)
 }
 
 static struct msm_serial_hs_platform_data msm_uart_dm1_pdata = {
-    .inject_rx_on_wakeup = 1,
-    .rx_to_inject = 0xFD,
+    .wakeup_irq = -1,
+    .inject_rx_on_wakeup = 0,
     .gpio_config = configure_uart_gpios,
+    .exit_lpm_cb = bcm_bt_lpm_exit_lpm_locked,
+};
+
+static struct bcm_bt_lpm_platform_data bcm_bt_lpm_pdata = {
+    .gpio_wake = SHOOTER_GPIO_BT_CHIP_WAKE,
+    .gpio_host_wake = SHOOTER_GPIO_BT_HOST_WAKE,
+    .request_clock_off_locked = msm_hs_request_clock_off_locked,
+ 	.request_clock_on_locked = msm_hs_request_clock_on_locked,
+};
+
+struct platform_device shooter_bcm_bt_lpm_device = {
+    .name = "bcm_bt_lpm",
+    .id = 0,
+    .dev = {
+        .platform_data = &bcm_bt_lpm_pdata,
+    },
 };
 #endif
 
@@ -2912,6 +2929,9 @@ static struct platform_device *devices[] __initdata = {
 	&msm_gsbi7_qup_i2c_device,
 	&msm_gsbi10_qup_i2c_device,
 #endif
+#ifdef CONFIG_SERIAL_MSM_HS
+    &shooter_bcm_bt_lpm_device,
+#endif
 #ifdef CONFIG_BT
 	&shooter_rfkill,
 #endif
@@ -4246,7 +4266,6 @@ static void __init msm8x60_init_buses(void)
 	bt_export_bd_address();
 #endif
 #ifdef CONFIG_SERIAL_MSM_HS
-    msm_uart_dm1_pdata.wakeup_irq = gpio_to_irq(SHOOTER_GPIO_BT_HOST_WAKE);
     msm_device_uart_dm1.dev.platform_data = &msm_uart_dm1_pdata;
 #endif
 #ifdef CONFIG_MSM_BUS_SCALING
