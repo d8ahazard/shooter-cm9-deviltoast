@@ -25,10 +25,8 @@ enum platform_type {
 	MSM_TYPE
 };
 
-#define TSENS_MAX_SENSORS		11
-
 struct tsens_platform_data {
-	int				slope[TSENS_MAX_SENSORS];
+	int				slope;
 	int				tsens_factor;
 	uint32_t			tsens_num_sensor;
 	enum platform_type		hw_type;

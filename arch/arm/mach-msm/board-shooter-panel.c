@@ -68,7 +68,7 @@ struct dsi_cmd_desc {
 extern int panel_type;
 
 enum MODE_3D{
-    OFF_3D = 0,
+	OFF_3D = 0,
 	LANDSCAPE_3D  = 1,
 	PORTRAIT_3D = 2,
 };

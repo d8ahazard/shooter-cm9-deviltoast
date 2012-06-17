@@ -1108,30 +1108,30 @@ static struct resource gsbi2_qup_spi_resources[] = {
         .end    = 7,
         .flags  = IORESOURCE_DMA,
     },
-    {
-        .name   = "spi_clk",
-        .start  = 40,
-        .end    = 40,
-        .flags  = IORESOURCE_IO,
-    },
-    {
-        .name   = "spi_miso",
-        .start  = 38,
-        .end    = 38,
-        .flags  = IORESOURCE_IO,
-    },
-    {
-        .name   = "spi_mosi",
-        .start  = 37,
-        .end    = 37,
-        .flags  = IORESOURCE_IO,
-    },
-    {
-        .name   = "spi_cs",
-        .start  = 39,
-        .end    = 39,
-        .flags  = IORESOURCE_IO,
-    },
+	{
+		.name   = "spi_clk",
+		.start  = 40,
+		.end    = 40,
+		.flags  = IORESOURCE_IO,
+	},
+	{
+		.name   = "spi_miso",
+		.start  = 38,
+		.end    = 38,
+		.flags  = IORESOURCE_IO,
+	},
+	{
+		.name   = "spi_mosi",
+		.start  = 37,
+		.end    = 37,
+		.flags  = IORESOURCE_IO,
+	},
+	{
+		.name   = "spi_cs",
+		.start  = 39,
+		.end    = 39,
+		.flags  = IORESOURCE_IO,
+	},
 };
 
 /* Use GSBI2 QUP for SPI-1 */

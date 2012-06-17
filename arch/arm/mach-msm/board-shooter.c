@@ -52,6 +52,7 @@
 #include <mach/board_htc.h>
 #include <mach/board-msm8660.h>
 #include <mach/cable_detect.h>
+#include <linux/msm_tsens.h>
 #include <mach/cpuidle.h>
 #include <mach/gpiomux.h>
 #include <mach/htc_battery_core.h>
@@ -143,11 +144,6 @@ static struct platform_device ram_console_device = {
 	.id		= -1,
 	.num_resources	= ARRAY_SIZE(ram_console_resources),
 	.resource	= ram_console_resources,
-};
-
-static struct platform_device msm_tsens_device = {
-	.name   = "tsens-tm",
-	.id = -1,
 };
 
 #ifdef CONFIG_MSM_VPE
@@ -3020,7 +3016,6 @@ static struct platform_device *devices[] __initdata = {
 #ifdef CONFIG_HW_RANDOM_MSM
 	&msm_device_rng,
 #endif
-	&msm_tsens_device,
 	&msm_rpm_device,
 	&cable_detect_device,
 #ifdef CONFIG_ION_MSM
@@ -4298,12 +4293,22 @@ static void __init msm8x60_init_buses(void)
 #endif
 }
 
+static struct tsens_platform_data pyr_tsens_pdata  = {
+                .tsens_factor           = 1000,
+                .hw_type                = MSM_8660,
+                .tsens_num_sensor       = 1,
+                .slope                  = 702,
+};
+
 static void __init msm8x60_init(void)
 {
 	int rc = 0;
 	struct kobject *properties_kobj;
 
 	pmic_reset_irq = PM8058_IRQ_BASE + PM8058_RESOUT_IRQ;
+
+    /* Initialize thermal sensors first */
+    msm_tsens_early_init(&pyr_tsens_pdata);
 
 	/*
 	 * Initialize RPM first as other drivers and devices may need

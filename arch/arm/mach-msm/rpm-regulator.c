@@ -785,7 +785,7 @@ static int vreg_disable(struct regulator_dev *rdev)
 	unsigned int mask[2] = {0}, val[2] = {0};
 	int rc = 0;
 
-    set_disable(vreg, mask, val);
+	set_disable(vreg, mask, val);
 
 	mutex_lock(&vreg->pc_lock);
 
@@ -814,23 +814,23 @@ static int vreg_set_voltage(struct regulator_dev *rdev, int min_uV, int max_uV,
 	int rc = 0, uV = min_uV;
 	int lim_min_uV, lim_max_uV, i;
 
-    // This is a safe-guard, since I'm too lazy to debug why the code lands here instead of disable
-    static int loopProtect = 0;
+	// This is a safe-guard, since I'm too lazy to debug why the code lands here instead of disable
+	static int loopProtect = 0;
 
-    // If we're trying to turn off the vreg, disable it!
-    if (min_uV == max_uV && min_uV == 0)
-    {
-        if (!loopProtect)
-        {
-            loopProtect = 1;
-            rc = vreg_disable(rdev);
-            loopProtect = 0;
-            if (!rc)
-            {
-                return 0;
-            }
-        }
-    }
+	// If we're trying to turn off the vreg, disable it!
+	if (min_uV == max_uV && min_uV == 0)
+	{
+		if (!loopProtect)
+		{
+			loopProtect = 1;
+			rc = vreg_disable(rdev);
+			loopProtect = 0;
+			if (!rc)
+			{
+				return 0;
+			}
+		}
+	}
 	/* Check if request voltage is outside of physically settable range. */
 	lim_min_uV = vreg->set_points->range[0].min_uV;
 	lim_max_uV =
